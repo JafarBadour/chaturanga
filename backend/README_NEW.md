@@ -295,4 +295,4 @@ CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 ## 📄 License
 
-This project is part of the xpander.ai chess application.
+This project is part of the chaturanga chess application.

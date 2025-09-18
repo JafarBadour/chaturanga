@@ -1,4 +1,4 @@
-# Xpander.ai Chess Application
+# Chaturanga Chess Application
 
 A full-stack chess application featuring an interactive React chess board with AI-powered position analysis using the Stockfish engine.
 
@@ -13,7 +13,7 @@ This application provides a complete chess experience with:
 ## 🏗️ Architecture
 
 ```
-xpander.ai/
+chaturanga/
 ├── backend/          # FastAPI chess analysis service
 ├── frontend/         # React chess board application
 └── README.md         # This file
@@ -31,7 +31,7 @@ xpander.ai/
 #### 1. Clone the Repository
 ```bash
 git clone <repository-url>
-cd xpander.ai
+cd chaturanga
 ```
 
 #### 2. Backend Setup
@@ -288,7 +288,7 @@ npx serve -s build -l 3000
 
 ## 📄 License
 
-This project is part of the xpander.ai chess application.
+This project is part of the chaturanga chess application.
 
 ## 🆘 Troubleshooting
 

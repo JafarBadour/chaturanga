@@ -265,4 +265,4 @@ backend/
 
 ## License
 
-This project is part of the xpander.ai chess application.
+This project is part of the chaturanga chess application.
