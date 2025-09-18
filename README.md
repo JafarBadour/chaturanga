@@ -1,4 +1,4 @@
-# Xpander.ai Chess Application
+# Chaturanga Chess Application
 
 A full-stack chess application featuring an interactive React chess board with AI-powered position analysis using the Stockfish engine.
 
