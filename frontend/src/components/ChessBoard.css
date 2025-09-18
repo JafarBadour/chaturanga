@@ -1,0 +1,219 @@
+/* ChessBoard.css - Lichess-style chessboard */
+
+.chessboard-container {
+  display: inline-block;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.chessboard {
+  display: flex;
+  flex-direction: column;
+  border: 2px solid #8b4513;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  background: #8b4513;
+  position: relative;
+}
+
+.rank {
+  display: flex;
+  flex: 1;
+}
+
+.square {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+/* Light squares */
+.square-light {
+  background-color: #f0d9b5;
+}
+
+/* Dark squares */
+.square-dark {
+  background-color: #b58863;
+}
+
+/* Hover effect */
+.square:hover {
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 0, 0.5);
+}
+
+/* Selected square */
+.square.selected {
+  background-color: #ffff00 !important;
+  box-shadow: inset 0 0 0 3px #ff6b6b;
+}
+
+/* Highlighted squares (for legal moves, etc.) */
+.square.highlighted {
+  background-color: #ffff94 !important;
+  box-shadow: inset 0 0 0 2px #4ecdc4;
+}
+
+/* Possible move squares */
+.square.possible-move {
+  background-color: #ffff94 !important;
+  position: relative;
+}
+
+.square.possible-move::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20%;
+  height: 20%;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* Capture squares */
+.square.capture {
+  background-color: #ffcccc !important;
+  position: relative;
+}
+
+.square.capture::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 3px solid #ff6b6b;
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+/* Last move squares */
+.square.last-move {
+  background-color: #cdd26a !important;
+  box-shadow: inset 0 0 0 2px #769656;
+}
+
+/* King in check */
+.square.in-check {
+  background-color: #ff6b6b !important; /* Red background */
+  box-shadow: inset 0 0 0 3px #ff0000; /* Red border */
+  animation: checkPulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes checkPulse {
+  0% {
+    box-shadow: inset 0 0 0 3px #ff0000;
+  }
+  100% {
+    box-shadow: inset 0 0 0 5px #ff0000;
+  }
+}
+
+/* Piece styling is now handled in Piece.css */
+
+/* Coordinate labels */
+.coordinate {
+  position: absolute;
+  font-size: 0.7em;
+  font-weight: bold;
+  color: #8b4513;
+  text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.8);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.file-coordinate {
+  bottom: 2px;
+  right: 4px;
+}
+
+.rank-coordinate {
+  top: 2px;
+  left: 4px;
+}
+
+/* Responsive design */
+@media (max-width: 600px) {
+  .chessboard {
+    max-width: 100%;
+    max-height: 100vw;
+  }
+  
+  .coordinate {
+    font-size: 0.6em;
+  }
+}
+
+/* Drag and drop styles */
+.square.drag-over {
+  background-color: #4ecdc4 !important;
+  opacity: 0.7;
+}
+
+/* Check indicator */
+.square.in-check {
+  background-color: #ff6b6b !important;
+  animation: checkPulse 1s infinite;
+}
+
+@keyframes checkPulse {
+  0%, 100% {
+    box-shadow: inset 0 0 0 3px #ff6b6b;
+  }
+  50% {
+    box-shadow: inset 0 0 0 6px #ff6b6b;
+  }
+}
+
+/* Board orientation indicator */
+.chessboard.flipped {
+  transform: rotate(180deg);
+}
+
+.chessboard.flipped .coordinate {
+  transform: rotate(180deg);
+}
+
+/* Accessibility */
+.square:focus {
+  outline: 3px solid #4ecdc4;
+  outline-offset: -3px;
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .square-light {
+    background-color: #ffffff;
+  }
+  
+  .square-dark {
+    background-color: #000000;
+  }
+  
+  .piece {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .square,
+  .piece {
+    transition: none;
+  }
+  
+  .piece.moving {
+    animation: none;
+  }
+  
+  .square.in-check {
+    animation: none;
+  }
+}

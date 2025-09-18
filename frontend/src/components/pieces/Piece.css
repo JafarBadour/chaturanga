@@ -1,0 +1,119 @@
+/* Piece.css - Chess piece styling */
+
+.piece {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease;
+  z-index: 2;
+  cursor: pointer;
+  user-select: none;
+}
+
+.piece:hover {
+  transform: scale(1.1);
+}
+
+.piece.selected {
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 8px rgba(255, 255, 0, 0.8));
+}
+
+.piece.dragging {
+  opacity: 0.8;
+  transform: scale(1.1);
+  z-index: 10;
+  cursor: grabbing;
+}
+
+/* Piece image styling */
+.piece-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+}
+
+/* Piece symbol styling (fallback) */
+.piece-symbol {
+  display: inline-block;
+  line-height: 1;
+}
+
+/* Animation for piece moves */
+@keyframes pieceMove {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.piece.moving {
+  animation: pieceMove 0.3s ease-in-out;
+}
+
+/* Check indicator */
+.piece.in-check {
+  filter: drop-shadow(0 0 8px #ff6b6b);
+  animation: checkPulse 1s infinite;
+}
+
+@keyframes checkPulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px #ff6b6b);
+  }
+  50% {
+    filter: drop-shadow(0 0 12px #ff6b6b);
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .piece {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  }
+  
+  .piece-image {
+    filter: contrast(1.2);
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .piece,
+  .piece-image {
+    transition: none;
+  }
+  
+  .piece.moving {
+    animation: none;
+  }
+  
+  .piece.in-check {
+    animation: none;
+  }
+}
+
+/* Touch devices */
+@media (hover: none) and (pointer: coarse) {
+  .piece:hover {
+    transform: none;
+  }
+  
+  .piece.selected {
+    transform: scale(1.05);
+  }
+}

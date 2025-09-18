@@ -1,0 +1,100 @@
+/* Arrow component styles */
+.arrow {
+  pointer-events: none; /* Allow clicks to pass through to board */
+  z-index: 10; /* Ensure arrows appear above board squares */
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2)); /* Subtle shadow for depth */
+}
+
+/* Arrow animations */
+.arrow line,
+.arrow polygon {
+  transition: opacity 0.3s ease;
+}
+
+/* Enhanced arrow styling */
+.arrow line {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.arrow polygon {
+  stroke-linejoin: round;
+}
+
+/* Enhanced triangle styling */
+.arrow polygon[fill] {
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.3));
+}
+
+.arrow polygon[fill="none"] {
+  stroke-linecap: round;
+}
+
+/* Arrow hover effects (if needed) */
+.arrow:hover line,
+.arrow:hover polygon {
+  opacity: 1 !important;
+}
+
+/* Different arrow types */
+.arrow.primary {
+  z-index: 15;
+}
+
+.arrow.secondary {
+  z-index: 10;
+}
+
+.arrow.highlight {
+  z-index: 20;
+}
+
+/* Arrow color variants */
+.arrow.red line,
+.arrow.red polygon {
+  stroke: #ff6b6b;
+  fill: #ff6b6b;
+}
+
+.arrow.blue line,
+.arrow.blue polygon {
+  stroke: #4dabf7;
+  fill: #4dabf7;
+}
+
+.arrow.green line,
+.arrow.green polygon {
+  stroke: #51cf66;
+  fill: #51cf66;
+}
+
+.arrow.yellow line,
+.arrow.yellow polygon {
+  stroke: #ffd43b;
+  fill: #ffd43b;
+}
+
+.arrow.purple line,
+.arrow.purple polygon {
+  stroke: #9775fa;
+  fill: #9775fa;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .arrow line {
+    stroke-width: 1.5;
+  }
+  
+  .arrow polygon {
+    transform: scale(0.8);
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .arrow line,
+  .arrow polygon {
+    transition: none;
+  }
+}
