@@ -348,4 +348,4 @@ For issues and questions:
 
 ---
 
-**Happy Chess Playing! ♟️**
+**Happy Chess  Playing! ♟️**
