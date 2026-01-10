@@ -1,6 +1,17 @@
 /* App.css - Main application styles */
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.layout {
+  display: flex;
+}
 
 .App {
+  display: flex;
+  flex: 1;
   text-align: center;
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
