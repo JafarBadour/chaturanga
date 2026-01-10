@@ -1,0 +1,55 @@
+.chess-container {
+    margin-top: 2rem;
+    background-color: #1a1a1a; /* Dark background like the image */
+    padding: 20px;
+    display: inline-block;
+    border-radius: 4px;
+}
+
+.chess-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 120px); /* 3 columns */
+  grid-template-rows: repeat(4, 80px);    /* 4 rows */
+  gap: 2px; /* Small gap to create the grid line effect */
+  background-color: #404040; /* Color of the "lines" */
+  border: 2px solid #404040;
+}
+
+.grid-button {
+  background-color: #262626; /* Button face color */
+  border: none;
+  color: #bababa;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-family: sans-serif;
+}
+
+.grid-button:hover {
+  background-color: #333333;
+}
+
+.grid-button.active {
+  background-color: #3d3d3d;
+  color: #ffffff;
+}
+
+.time-text {
+  font-size: 1.5rem;
+  font-weight: 300;
+  display: block;
+}
+
+.label-text {
+  font-size: 0.85rem;
+  opacity: 0.7;
+  margin-top: 4px;
+}
+
+/* Specific styling for the Custom button */
+.grid-button:last-child .time-text {
+  font-size: 1.1rem;
+}
