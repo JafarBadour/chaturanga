@@ -186,6 +186,23 @@ export class ChessEngine {
     return moves;
   }
 
+  // new helper for pawn attack squares
+  getPawnAttackSquares(row, col, piece) {
+    const attacks = []
+    const isWhite = piece === piece.toUpperCase()
+    const direction = isWhite ? -1 : 1
+
+    for (const dc of [-1, 1]) {
+      const r = row + direction
+      const c = col + dc
+
+      if (this.isOnBoard(r, c)) {
+        attacks.push(this.coordsToSquare(r, c))
+      }
+    }
+    return attacks
+  }
+
   // Rook moves
   getRookMoves(row, col, piece) {
     const moves = [];
@@ -307,7 +324,7 @@ export class ChessEngine {
     
     switch (pieceType) {
       case 'p':
-        moves.push(...this.getPawnMoves(row, col, piece));
+        moves.push(...this.getPawnAttackSquares(row, col, piece));
         break;
       case 'r':
         moves.push(...this.getRookMoves(row, col, piece));
@@ -466,8 +483,12 @@ export class ChessEngine {
     let newEnPassant = null;
     if (piece.toLowerCase() === 'p' && Math.abs(toRow - fromRow) === 2) {
       // Pawn made a double move, set en passant target
-      const enPassantRow = this.turn === 'w' ? toRow + 1 : toRow - 1;
-      newEnPassant = this.coordsToSquare(enPassantRow, toCol);
+
+
+      // const enPassantRow = this.turn === 'w' ? toRow + 1 : toRow - 1;
+
+      const enPassantRow = (fromRow + toRow) / 2
+       newEnPassant = this.coordsToSquare(enPassantRow, toCol);
     }
     
     // Update game state
