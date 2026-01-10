@@ -1,10 +1,12 @@
 // ChessEngine.js - Chess game logic and move validation
 
 export class ChessEngine {
-  constructor(fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {
+  constructor(
+    fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+  ) {
     this.board = this.parseFEN(fen);
-    this.turn = 'w'; // 'w' for white, 'b' for black
-    this.castlingRights = 'KQkq';
+    this.turn = "w"; // 'w' for white, 'b' for black
+    this.castlingRights = "KQkq";
     this.enPassant = null;
     this.halfmoveClock = 0;
     this.fullmoveNumber = 1;
@@ -14,12 +16,12 @@ export class ChessEngine {
 
   // Parse FEN string into board array
   parseFEN(fen) {
-    const parts = fen.split(' ');
+    const parts = fen.split(" ");
     const piecePlacement = parts[0];
-    const ranks = piecePlacement.split('/');
-    
+    const ranks = piecePlacement.split("/");
+
     const board = [];
-    ranks.forEach(rank => {
+    ranks.forEach((rank) => {
       const rankArray = [];
       for (let char of rank) {
         if (isNaN(char)) {
@@ -32,25 +34,25 @@ export class ChessEngine {
       }
       board.push(rankArray);
     });
-    
+
     return board;
   }
 
   // Update engine state from FEN
   updateFromFEN(fen) {
-    const parts = fen.split(' ');
+    const parts = fen.split(" ");
     this.board = this.parseFEN(fen);
-    this.turn = parts[1] || 'w';
-    this.castlingRights = parts[2] || 'KQkq';
-    this.enPassant = parts[3] === '-' ? null : parts[3];
+    this.turn = parts[1] || "w";
+    this.castlingRights = parts[2] || "KQkq";
+    this.enPassant = parts[3] === "-" ? null : parts[3];
     this.halfmoveClock = parseInt(parts[4]) || 0;
     this.fullmoveNumber = parseInt(parts[5]) || 1;
   }
 
   // Convert board to FEN string
   toFEN() {
-    let fen = '';
-    
+    let fen = "";
+
     // Piece placement
     for (let rank of this.board) {
       let emptyCount = 0;
@@ -68,13 +70,15 @@ export class ChessEngine {
       if (emptyCount > 0) {
         fen += emptyCount;
       }
-      fen += '/';
+      fen += "/";
     }
     fen = fen.slice(0, -1); // Remove trailing slash
-    
+
     // Add other FEN parts
-    fen += ` ${this.turn} ${this.castlingRights} ${this.enPassant || '-'} ${this.halfmoveClock} ${this.fullmoveNumber}`;
-    
+    fen += ` ${this.turn} ${this.castlingRights} ${this.enPassant || "-"} ${
+      this.halfmoveClock
+    } ${this.fullmoveNumber}`;
+
     return fen;
   }
 
@@ -107,44 +111,44 @@ export class ChessEngine {
   getLegalMoves(square) {
     const piece = this.getPieceAt(square);
     if (!piece) return [];
-    
+
     const { row, col } = this.squareToCoords(square);
     const moves = [];
-    
+
     // Check if it's the piece's turn
-    const pieceColor = piece === piece.toUpperCase() ? 'w' : 'b';
+    const pieceColor = piece === piece.toUpperCase() ? "w" : "b";
     if (pieceColor !== this.turn) return moves;
-    
+
     const pieceType = piece.toLowerCase();
-    
+
     switch (pieceType) {
-      case 'p':
+      case "p":
         moves.push(...this.getPawnMoves(row, col, piece));
         break;
-      case 'r':
+      case "r":
         moves.push(...this.getRookMoves(row, col, piece));
         break;
-      case 'n':
+      case "n":
         moves.push(...this.getKnightMoves(row, col, piece));
         break;
-      case 'b':
+      case "b":
         moves.push(...this.getBishopMoves(row, col, piece));
         break;
-      case 'q':
+      case "q":
         moves.push(...this.getQueenMoves(row, col, piece));
         break;
-      case 'k':
+      case "k":
         moves.push(...this.getKingMoves(row, col, piece));
         break;
     }
-    
+
     // Filter moves based on check status
     if (this.isInCheck()) {
       // When in check, only show moves that get the king out of check
-      return moves.filter(move => this.wouldGetOutOfCheck(square, move));
+      return moves.filter((move) => this.wouldGetOutOfCheck(square, move));
     } else {
       // When not in check, filter out moves that would put own king in check
-      return moves.filter(move => !this.wouldBeInCheck(square, move));
+      return moves.filter((move) => !this.wouldBeInCheck(square, move));
     }
   }
 
@@ -154,62 +158,76 @@ export class ChessEngine {
     const isWhite = piece === piece.toUpperCase();
     const direction = isWhite ? -1 : 1;
     const startRow = isWhite ? 6 : 1;
-    
+
     // Forward move
-    if (this.isOnBoard(row + direction, col) && this.board[row + direction][col] === null) {
+    if (
+      this.isOnBoard(row + direction, col) &&
+      this.board[row + direction][col] === null
+    ) {
       moves.push(this.coordsToSquare(row + direction, col));
-      
+
       // Double move from starting position
       if (row === startRow && this.board[row + 2 * direction][col] === null) {
         moves.push(this.coordsToSquare(row + 2 * direction, col));
       }
     }
-    
+
     // Diagonal captures
     for (const colOffset of [-1, 1]) {
       const newRow = row + direction;
       const newCol = col + colOffset;
-      
+
       if (this.isOnBoard(newRow, newCol)) {
         const targetPiece = this.board[newRow][newCol];
-        if (targetPiece && (targetPiece === targetPiece.toUpperCase()) !== isWhite) {
+        if (
+          targetPiece &&
+          (targetPiece === targetPiece.toUpperCase()) !== isWhite
+        ) {
           moves.push(this.coordsToSquare(newRow, newCol));
         }
-        
+
         // En passant
         if (this.enPassant === this.coordsToSquare(newRow, newCol)) {
           moves.push(this.coordsToSquare(newRow, newCol));
         }
       }
     }
-    
+
     return moves;
   }
 
   // Rook moves
   getRookMoves(row, col, piece) {
     const moves = [];
-    const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
-    
+    const directions = [
+      [-1, 0],
+      [1, 0],
+      [0, -1],
+      [0, 1],
+    ];
+
     for (const [dRow, dCol] of directions) {
       for (let i = 1; i < 8; i++) {
         const newRow = row + dRow * i;
         const newCol = col + dCol * i;
-        
+
         if (!this.isOnBoard(newRow, newCol)) break;
-        
+
         const targetPiece = this.board[newRow][newCol];
         if (targetPiece === null) {
           moves.push(this.coordsToSquare(newRow, newCol));
         } else {
-          if ((targetPiece === targetPiece.toUpperCase()) !== (piece === piece.toUpperCase())) {
+          if (
+            (targetPiece === targetPiece.toUpperCase()) !==
+            (piece === piece.toUpperCase())
+          ) {
             moves.push(this.coordsToSquare(newRow, newCol));
           }
           break;
         }
       }
     }
-    
+
     return moves;
   }
 
@@ -217,81 +235,173 @@ export class ChessEngine {
   getKnightMoves(row, col, piece) {
     const moves = [];
     const knightMoves = [
-      [-2, -1], [-2, 1], [-1, -2], [-1, 2],
-      [1, -2], [1, 2], [2, -1], [2, 1]
+      [-2, -1],
+      [-2, 1],
+      [-1, -2],
+      [-1, 2],
+      [1, -2],
+      [1, 2],
+      [2, -1],
+      [2, 1],
     ];
-    
+
     for (const [dRow, dCol] of knightMoves) {
       const newRow = row + dRow;
       const newCol = col + dCol;
-      
+
       if (this.isOnBoard(newRow, newCol)) {
         const targetPiece = this.board[newRow][newCol];
-        if (targetPiece === null || (targetPiece === targetPiece.toUpperCase()) !== (piece === piece.toUpperCase())) {
+        if (
+          targetPiece === null ||
+          (targetPiece === targetPiece.toUpperCase()) !==
+            (piece === piece.toUpperCase())
+        ) {
           moves.push(this.coordsToSquare(newRow, newCol));
         }
       }
     }
-    
+
     return moves;
   }
 
   // Bishop moves
   getBishopMoves(row, col, piece) {
     const moves = [];
-    const directions = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
-    
+    const directions = [
+      [-1, -1],
+      [-1, 1],
+      [1, -1],
+      [1, 1],
+    ];
+
     for (const [dRow, dCol] of directions) {
       for (let i = 1; i < 8; i++) {
         const newRow = row + dRow * i;
         const newCol = col + dCol * i;
-        
+
         if (!this.isOnBoard(newRow, newCol)) break;
-        
+
         const targetPiece = this.board[newRow][newCol];
         if (targetPiece === null) {
           moves.push(this.coordsToSquare(newRow, newCol));
         } else {
-          if ((targetPiece === targetPiece.toUpperCase()) !== (piece === piece.toUpperCase())) {
+          if (
+            (targetPiece === targetPiece.toUpperCase()) !==
+            (piece === piece.toUpperCase())
+          ) {
             moves.push(this.coordsToSquare(newRow, newCol));
           }
           break;
         }
       }
     }
-    
+
     return moves;
   }
 
   // Queen moves (combination of rook and bishop)
   getQueenMoves(row, col, piece) {
-    return [...this.getRookMoves(row, col, piece), ...this.getBishopMoves(row, col, piece)];
+    return [
+      ...this.getRookMoves(row, col, piece),
+      ...this.getBishopMoves(row, col, piece),
+    ];
   }
+
+  // king attack moves
+  getKingAttackMoves(row, col, piece) {
+    const moves = [];
+    const directions = [
+      [-1, -1],
+      [-1, 0],
+      [-1, 1],
+      [0, -1],
+      [0, 1],
+      [1, -1],
+      [1, 0],
+      [1, 1],
+    ];
+
+    for (const [dRow, dCol] of directions) {
+      const newRow = row + dRow;
+      const newCol = col + dCol;
+
+      if (this.isOnBoard(newRow, newCol)) {
+        const targetPiece = this.board[newRow][newCol];
+        if (
+          targetPiece === null ||
+          this.getPieceColor(targetPiece) !== this.getPieceColor(piece)
+        ) {
+          moves.push(this.coordsToSquare(newRow, newCol));
+        }
+      }
+    }
+
+    return moves;
+  }
+
 
   // King moves
   getKingMoves(row, col, piece) {
     const moves = [];
     const directions = [
-      [-1, -1], [-1, 0], [-1, 1],
-      [0, -1], [0, 1],
-      [1, -1], [1, 0], [1, 1]
+      [-1, -1],
+      [-1, 0],
+      [-1, 1],
+      [0, -1],
+      [0, 1],
+      [1, -1],
+      [1, 0],
+      [1, 1],
     ];
-    
+
     for (const [dRow, dCol] of directions) {
       const newRow = row + dRow;
       const newCol = col + dCol;
-      
+
       if (this.isOnBoard(newRow, newCol)) {
         const targetPiece = this.board[newRow][newCol];
-        if (targetPiece === null || (targetPiece === targetPiece.toUpperCase()) !== (piece === piece.toUpperCase())) {
+        if (
+          targetPiece === null ||
+          (targetPiece === targetPiece.toUpperCase()) !==
+            (piece === piece.toUpperCase())
+        ) {
           moves.push(this.coordsToSquare(newRow, newCol));
         }
       }
     }
-    
-    // Castling (simplified - would need more complex logic for full implementation)
-    // This is a basic implementation
-    
+
+    // Castling
+    const isWhite = piece === "K";
+    const rank = isWhite ? 7 : 0;
+    const enemy = isWhite ? "b" : "w";
+    const kingSquare = this.coordsToSquare(row, col);
+
+ if (!this.isInCheck()) {
+   // King-side
+   if (
+     this.castlingRights.includes(isWhite ? "K" : "k") &&
+     this.board[rank][5] === null &&
+     this.board[rank][6] === null &&
+     !this.isSquareUnderAttack(this.coordsToSquare(rank, 5), enemy) &&
+     !this.isSquareUnderAttack(this.coordsToSquare(rank, 6), enemy)
+   ) {
+     moves.push(this.coordsToSquare(rank, 6));
+   }
+
+   // Queen-side
+   if (
+     this.castlingRights.includes(isWhite ? "Q" : "q") &&
+     this.board[rank][1] === null &&
+     this.board[rank][2] === null &&
+     this.board[rank][3] === null &&
+     !this.isSquareUnderAttack(this.coordsToSquare(rank, 3), enemy) &&
+     !this.isSquareUnderAttack(this.coordsToSquare(rank, 2), enemy)
+   ) {
+     moves.push(this.coordsToSquare(rank, 2));
+   }
+ }
+
+
     return moves;
   }
 
@@ -299,33 +409,33 @@ export class ChessEngine {
   getRawMoves(square) {
     const piece = this.getPieceAt(square);
     if (!piece) return [];
-    
+
     const { row, col } = this.squareToCoords(square);
     const moves = [];
-    
+
     const pieceType = piece.toLowerCase();
-    
+
     switch (pieceType) {
-      case 'p':
+      case "p":
         moves.push(...this.getPawnMoves(row, col, piece));
         break;
-      case 'r':
+      case "r":
         moves.push(...this.getRookMoves(row, col, piece));
         break;
-      case 'n':
+      case "n":
         moves.push(...this.getKnightMoves(row, col, piece));
         break;
-      case 'b':
+      case "b":
         moves.push(...this.getBishopMoves(row, col, piece));
         break;
-      case 'q':
+      case "q":
         moves.push(...this.getQueenMoves(row, col, piece));
         break;
-      case 'k':
-        moves.push(...this.getKingMoves(row, col, piece));
+      case "k":
+        moves.push(...this.getKingAttackMoves(row, col, piece));
         break;
     }
-    
+
     return moves;
   }
 
@@ -350,14 +460,14 @@ export class ChessEngine {
   isInCheck() {
     const kingSquare = this.findKing(this.turn);
     if (!kingSquare) return false;
-    
-    const opponentColor = this.turn === 'w' ? 'b' : 'w';
+
+    const opponentColor = this.turn === "w" ? "b" : "w";
     return this.isSquareUnderAttack(kingSquare, opponentColor);
   }
 
   // Find the king of the specified color
   findKing(color) {
-    const king = color === 'w' ? 'K' : 'k';
+    const king = color === "w" ? "K" : "k";
     for (let r = 0; r < 8; r++) {
       for (let c = 0; c < 8; c++) {
         if (this.board[r][c] === king) {
@@ -370,7 +480,7 @@ export class ChessEngine {
 
   // Get the color of a piece
   getPieceColor(piece) {
-    return piece === piece.toUpperCase() ? 'w' : 'b';
+    return piece === piece.toUpperCase() ? "w" : "b";
   }
 
   // Get all pieces attacking a square (for debugging)
@@ -385,7 +495,7 @@ export class ChessEngine {
             attackers.push({
               piece,
               square: this.coordsToSquare(r, c),
-              moves: rawMoves
+              moves: rawMoves,
             });
           }
         }
@@ -399,21 +509,21 @@ export class ChessEngine {
     // Make a temporary move
     const { row: fromRow, col: fromCol } = this.squareToCoords(from);
     const { row: toRow, col: toCol } = this.squareToCoords(to);
-    
+
     const originalPiece = this.board[fromRow][fromCol];
     const capturedPiece = this.board[toRow][toCol];
-    
+
     // Make the move
     this.board[toRow][toCol] = originalPiece;
     this.board[fromRow][fromCol] = null;
-    
+
     // Check if king is in check
     const inCheck = this.isInCheck();
-    
+
     // Undo the move
     this.board[fromRow][fromCol] = originalPiece;
     this.board[toRow][toCol] = capturedPiece;
-    
+
     return inCheck;
   }
 
@@ -422,87 +532,120 @@ export class ChessEngine {
     // Make a temporary move
     const { row: fromRow, col: fromCol } = this.squareToCoords(from);
     const { row: toRow, col: toCol } = this.squareToCoords(to);
-    
+
     const originalPiece = this.board[fromRow][fromCol];
     const capturedPiece = this.board[toRow][toCol];
-    
+
     // Make the move
     this.board[toRow][toCol] = originalPiece;
     this.board[fromRow][fromCol] = null;
-    
+
     // Check if king is still in check after the move
     const stillInCheck = this.isInCheck();
-    
+
     // Undo the move
     this.board[fromRow][fromCol] = originalPiece;
     this.board[toRow][toCol] = capturedPiece;
-    
+
     // Return true if the move gets the king out of check
     return !stillInCheck;
+  }
+
+  // helper for castling rights
+  removeCastlingRights(piece, fromSquare) {
+    if (piece === "K")
+      this.castlingRights = this.castlingRights.replace(/[KQ]/g, "");
+    if (piece === "k")
+      this.castlingRights = this.castlingRights.replace(/[kq]/g, "");
+
+    if (piece === "R") {
+      if (fromSquare === "a1")
+        this.castlingRights = this.castlingRights.replace("Q", "");
+      if (fromSquare === "h1")
+        this.castlingRights = this.castlingRights.replace("K", "");
+    }
+
+    if (piece === "r") {
+      if (fromSquare === "a8")
+        this.castlingRights = this.castlingRights.replace("q", "");
+      if (fromSquare === "h8")
+        this.castlingRights = this.castlingRights.replace("k", "");
+    }
   }
 
   // Make a move
   makeMove(from, to) {
     const { row: fromRow, col: fromCol } = this.squareToCoords(from);
     const { row: toRow, col: toCol } = this.squareToCoords(to);
-    
+
     const piece = this.board[fromRow][fromCol];
     let capturedPiece = this.board[toRow][toCol];
     let enPassantCapture = null;
-    
-    // Check for en passant capture
-    if (piece.toLowerCase() === 'p' && to === this.enPassant) {
-      // Remove the captured pawn (it's behind the destination square)
-      const capturedRow = this.turn === 'w' ? toRow + 1 : toRow - 1;
+
+    // Remove castling rights FIRST (before board changes)
+    this.removeCastlingRights(piece, from);
+    if (capturedPiece) {
+      this.removeCastlingRights(capturedPiece, to);
+    }
+
+    // En passant capture
+    if (piece.toLowerCase() === "p" && to === this.enPassant) {
+      const capturedRow = this.turn === "w" ? toRow + 1 : toRow - 1;
       enPassantCapture = this.board[capturedRow][toCol];
       this.board[capturedRow][toCol] = null;
+      capturedPiece = enPassantCapture;
     }
-    
-    // Make the move
+
+    // Castling rook move
+    if (piece.toLowerCase() === "k" && Math.abs(toCol - fromCol) === 2) {
+      const rookFromCol = toCol === 6 ? 7 : 0;
+      const rookToCol = toCol === 6 ? 5 : 3;
+
+      const rook = this.board[fromRow][rookFromCol];
+      this.board[fromRow][rookToCol] = rook;
+      this.board[fromRow][rookFromCol] = null;
+    }
+
+    // Move the king / piece
     this.board[toRow][toCol] = piece;
     this.board[fromRow][fromCol] = null;
-    
-    // Update en passant target for double pawn moves
+
+    // En passant target (keep as-is for now)
     let newEnPassant = null;
-    if (piece.toLowerCase() === 'p' && Math.abs(toRow - fromRow) === 2) {
-      // Pawn made a double move, set en passant target
-      const enPassantRow = this.turn === 'w' ? toRow + 1 : toRow - 1;
+    if (piece.toLowerCase() === "p" && Math.abs(toRow - fromRow) === 2) {
+      const enPassantRow = this.turn === "w" ? toRow + 1 : toRow - 1;
       newEnPassant = this.coordsToSquare(enPassantRow, toCol);
     }
-    
-    // Update game state
-    this.turn = this.turn === 'w' ? 'b' : 'w';
-    if (this.turn === 'w') {
-      this.fullmoveNumber++;
-    }
-    
-    // Update en passant target
+
+    // Switch turn
+    this.turn = this.turn === "w" ? "b" : "w";
+    if (this.turn === "w") this.fullmoveNumber++;
+
     this.enPassant = newEnPassant;
-    
-    // Update halfmove clock
-    if (piece.toLowerCase() === 'p' || capturedPiece || enPassantCapture) {
+
+    // Halfmove clock
+    if (piece.toLowerCase() === "p" || capturedPiece) {
       this.halfmoveClock = 0;
     } else {
       this.halfmoveClock++;
     }
-    
-    // Store move in history
+
     this.moveHistory.push({
       from,
       to,
       piece,
-      capturedPiece: capturedPiece || enPassantCapture,
+      capturedPiece,
       enPassantCapture,
-      fen: this.toFEN()
+      fen: this.toFEN(),
     });
-    
+
     return {
       from,
       to,
       piece,
-      capturedPiece: capturedPiece || enPassantCapture,
+      capturedPiece,
       enPassantCapture,
-      fen: this.toFEN()
+      fen: this.toFEN(),
     };
   }
 
@@ -558,7 +701,7 @@ export class ChessEngine {
     const inCheck = this.isInCheck();
     const checkmate = this.isCheckmate();
     const stalemate = this.isStalemate();
-    
+
     return {
       fen: this.toFEN(),
       turn: this.turn,
@@ -570,7 +713,7 @@ export class ChessEngine {
       inCheck,
       checkmate,
       stalemate,
-      gameOver: checkmate || stalemate
+      gameOver: checkmate || stalemate,
     };
   }
 }
