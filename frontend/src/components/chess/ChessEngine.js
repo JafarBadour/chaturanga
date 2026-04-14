@@ -196,6 +196,23 @@ export class ChessEngine {
     return moves;
   }
 
+  // new helper for pawn attack squares
+  getPawnAttackSquares(row, col, piece) {
+    const attacks = [];
+    const isWhite = piece === piece.toUpperCase();
+    const direction = isWhite ? -1 : 1;
+
+    for (const dc of [-1, 1]) {
+      const r = row + direction;
+      const c = col + dc;
+
+      if (this.isOnBoard(r, c)) {
+        attacks.push(this.coordsToSquare(r, c));
+      }
+    }
+    return attacks;
+  }
+
   // Rook moves
   getRookMoves(row, col, piece) {
     const moves = [];
@@ -339,7 +356,6 @@ export class ChessEngine {
     return moves;
   }
 
-
   // King moves
   getKingMoves(row, col, piece) {
     const moves = [];
@@ -374,33 +390,31 @@ export class ChessEngine {
     const isWhite = piece === "K";
     const rank = isWhite ? 7 : 0;
     const enemy = isWhite ? "b" : "w";
-    const kingSquare = this.coordsToSquare(row, col);
 
- if (!this.isInCheck()) {
-   // King-side
-   if (
-     this.castlingRights.includes(isWhite ? "K" : "k") &&
-     this.board[rank][5] === null &&
-     this.board[rank][6] === null &&
-     !this.isSquareUnderAttack(this.coordsToSquare(rank, 5), enemy) &&
-     !this.isSquareUnderAttack(this.coordsToSquare(rank, 6), enemy)
-   ) {
-     moves.push(this.coordsToSquare(rank, 6));
-   }
+    if (!this.isInCheck()) {
+      // King-side
+      if (
+        this.castlingRights.includes(isWhite ? "K" : "k") &&
+        this.board[rank][5] === null &&
+        this.board[rank][6] === null &&
+        !this.isSquareUnderAttack(this.coordsToSquare(rank, 5), enemy) &&
+        !this.isSquareUnderAttack(this.coordsToSquare(rank, 6), enemy)
+      ) {
+        moves.push(this.coordsToSquare(rank, 6));
+      }
 
-   // Queen-side
-   if (
-     this.castlingRights.includes(isWhite ? "Q" : "q") &&
-     this.board[rank][1] === null &&
-     this.board[rank][2] === null &&
-     this.board[rank][3] === null &&
-     !this.isSquareUnderAttack(this.coordsToSquare(rank, 3), enemy) &&
-     !this.isSquareUnderAttack(this.coordsToSquare(rank, 2), enemy)
-   ) {
-     moves.push(this.coordsToSquare(rank, 2));
-   }
- }
-
+      // Queen-side
+      if (
+        this.castlingRights.includes(isWhite ? "Q" : "q") &&
+        this.board[rank][1] === null &&
+        this.board[rank][2] === null &&
+        this.board[rank][3] === null &&
+        !this.isSquareUnderAttack(this.coordsToSquare(rank, 3), enemy) &&
+        !this.isSquareUnderAttack(this.coordsToSquare(rank, 2), enemy)
+      ) {
+        moves.push(this.coordsToSquare(rank, 2));
+      }
+    }
 
     return moves;
   }
@@ -417,7 +431,8 @@ export class ChessEngine {
 
     switch (pieceType) {
       case "p":
-        moves.push(...this.getPawnMoves(row, col, piece));
+        // Use attack squares specifically for pawn attack detection
+        moves.push(...this.getPawnAttackSquares(row, col, piece));
         break;
       case "r":
         moves.push(...this.getRookMoves(row, col, piece));
@@ -481,27 +496,6 @@ export class ChessEngine {
   // Get the color of a piece
   getPieceColor(piece) {
     return piece === piece.toUpperCase() ? "w" : "b";
-  }
-
-  // Get all pieces attacking a square (for debugging)
-  getAttackingPieces(square, attackingColor) {
-    const attackers = [];
-    for (let r = 0; r < 8; r++) {
-      for (let c = 0; c < 8; c++) {
-        const piece = this.board[r][c];
-        if (piece && this.getPieceColor(piece) === attackingColor) {
-          const rawMoves = this.getRawMoves(this.coordsToSquare(r, c));
-          if (rawMoves.includes(square)) {
-            attackers.push({
-              piece,
-              square: this.coordsToSquare(r, c),
-              moves: rawMoves,
-            });
-          }
-        }
-      }
-    }
-    return attackers;
   }
 
   // Check if a move would put own king in check
@@ -610,10 +604,10 @@ export class ChessEngine {
     this.board[toRow][toCol] = piece;
     this.board[fromRow][fromCol] = null;
 
-    // En passant target (keep as-is for now)
+    // En passant target calculation
     let newEnPassant = null;
     if (piece.toLowerCase() === "p" && Math.abs(toRow - fromRow) === 2) {
-      const enPassantRow = this.turn === "w" ? toRow + 1 : toRow - 1;
+      const enPassantRow = (fromRow + toRow) / 2;
       newEnPassant = this.coordsToSquare(enPassantRow, toCol);
     }
 
