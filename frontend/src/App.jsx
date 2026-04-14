@@ -7,7 +7,6 @@ import "./App.css";
 
 function App() {
   return (
-  <>
     <div className="layout">
       <aside>
         <SideBar />
@@ -15,9 +14,9 @@ function App() {
 
       <div className="App">
         <ChessBoardExample />
-       <ChessGrid/>
+        <ChessGrid />
       </div>
-   </>
+    </div>
   );
 }
 
