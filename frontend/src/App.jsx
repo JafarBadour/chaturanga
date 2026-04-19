@@ -1,11 +1,21 @@
 import React from 'react';
 import ChessBoardExample from './components/ChessBoardExample';
-import './App.css';
+import { SideBar } from "./components/SideBar";
+import ChessGrid from './components/ChessGrid';
+
+import "./App.css";
 
 function App() {
   return (
-    <div className="App">
-      <ChessBoardExample />
+    <div className="layout">
+      <aside>
+        <SideBar />
+      </aside>
+
+      <div className="App">
+        <ChessBoardExample />
+        <ChessGrid />
+      </div>
     </div>
   );
 }
