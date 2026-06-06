@@ -114,22 +114,110 @@
   text-align: center;
 }
 
-.lobby-panel.royale-panel {
-  border: 1px solid #5c4a1f;
-  background: linear-gradient(180deg, #2a2620 0%, #262421 100%);
+/* ── Lichess-style hero (play page) ── */
+.royale-container.royale-hero {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  gap: 16px;
 }
 
-.lobby-panel.royale-panel h2 {
-  color: #d4a843;
+.royale-hero .royale-grid-wrap {
+  position: relative;
+  width: 100%;
 }
 
-.lobby-panel.royale-panel .lobby-desc {
-  color: #a89878;
+.royale-hero .royale-grid-watermark {
+  position: absolute;
+  width: min(72%, 320px);
+  height: auto;
+  right: -4%;
+  top: 22%;
+  color: #fff;
+  opacity: 0.06;
+  pointer-events: none;
+  z-index: 0;
 }
 
-.lobby-panels-stack {
+.royale-hero .royale-tiers {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  width: 100%;
+  gap: 16px;
+}
+
+.royale-hero .royale-tier-label {
+  font-size: 0.85rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: #999;
+  margin-bottom: 2px;
+}
+
+.royale-hero .royale-tier-row {
+  gap: 8px;
+}
+
+.royale-hero .royale-button {
+  background: #34312e;
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  min-height: 96px;
+  padding: 16px 12px;
+  transform: none;
+}
+
+.royale-hero .royale-button:hover {
+  background: #3d3a37;
+  border-color: transparent;
+  transform: none;
+}
+
+.royale-hero .royale-button.dimmed {
+  opacity: 0.45;
+}
+
+.royale-hero .royale-button.dimmed:hover {
+  opacity: 0.75;
+}
+
+.royale-hero .royale-button.seeking {
+  background: #3d3a37;
+  box-shadow: inset 0 0 0 2px #e6912c;
+}
+
+.royale-hero .royale-button.seeking:hover {
+  background: #454240;
+  border-color: transparent;
+}
+
+.royale-hero .royale-button .seek-spinner {
+  border-top-color: #e6912c;
+}
+
+.royale-hero .royale-time {
+  font-size: clamp(1.6rem, 4vw, 2rem);
+  font-weight: 400;
+}
+
+.royale-hero .royale-unit {
+  font-size: 0.85rem;
+  opacity: 1;
+  color: #999;
+  text-transform: capitalize;
+  margin-top: 6px;
+}
+
+@media (min-width: 520px) {
+  .royale-hero .royale-button {
+    min-height: 108px;
+  }
+
+  .royale-hero .royale-tier-row {
+    gap: 9px;
+  }
 }

@@ -3,6 +3,7 @@ Utility functions for chess-related operations.
 """
 
 import os
+import shutil
 from typing import Tuple, Optional
 import chess
 
@@ -52,8 +53,12 @@ def find_stockfish_path(stockfish_paths: list) -> Optional[str]:
         Path to Stockfish executable or None if not found
     """
     for path in stockfish_paths:
-        if os.path.exists(path) or path == "stockfish":
+        if os.path.isfile(path) and os.access(path, os.X_OK):
             return path
+        if "/" not in path and not path.startswith("."):
+            resolved = shutil.which(path)
+            if resolved:
+                return resolved
     return None
 
 

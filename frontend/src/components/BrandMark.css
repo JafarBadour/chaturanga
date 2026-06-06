@@ -1,0 +1,73 @@
+.brand-mark {
+  display: inline-flex;
+  align-items: baseline;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: inherit;
+  white-space: nowrap;
+}
+
+.brand-che,
+.brand-strikes {
+  font-variant-ligatures: none;
+}
+
+.brand-strikes {
+  letter-spacing: -0.02em;
+}
+
+.brand-ss {
+  position: relative;
+  display: inline-block;
+  width: 0.72em;
+  height: 1em;
+  margin: 0 -0.02em;
+  flex-shrink: 0;
+}
+
+.brand-s {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.brand-s-back {
+  color: #629924;
+  transform: translate(-0.14em, 0.06em) scale(1.05);
+  opacity: 0.85;
+}
+
+.brand-s-front {
+  color: #d4a843;
+  transform: translate(0.08em, -0.02em);
+  text-shadow: 0 0 18px rgba(212, 168, 67, 0.35);
+}
+
+.brand-mark-sm {
+  font-size: 0.95rem;
+}
+
+.brand-mark-md {
+  font-size: inherit;
+}
+
+.brand-mark-lg {
+  font-size: 2rem;
+}
+
+.brand-mark-lg .brand-ss {
+  width: 0.78em;
+}
+
+.auth-brand-title {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.auth-brand-title .brand-mark-lg {
+  font-size: 2.15rem;
+}

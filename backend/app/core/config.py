@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     )
 
     # API
-    app_name: str = "Chaturanga Chess Platform"
+    app_name: str = "ChessStrikes"
     app_version: str = "2.0.0"
     debug: bool = False
 
@@ -69,13 +69,7 @@ class Settings(BaseSettings):
         validation_alias="JWT_BLACKLIST_TOKEN_CHECKS",
     )
 
-    # Chess engine
-    stockfish_paths: List[str] = [
-        "./stockfish",
-        "/usr/local/bin/stockfish",
-        "/usr/bin/stockfish",
-        "stockfish",
-    ]
+    # Chess engine (disabled)
     default_analysis_time: float = 1.0
     max_analysis_time: float = 10.0
 

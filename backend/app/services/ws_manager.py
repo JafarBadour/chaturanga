@@ -427,7 +427,7 @@ class ConnectionManager:
                         "user_id": user_id,
                         "username": user.username,
                         "reaction_id": reaction_id,
-                        "at": datetime.utcnow().isoformat(),
+                        "at": datetime.utcnow().isoformat() + "Z",
                     },
                 )
 
@@ -474,7 +474,7 @@ class ConnectionManager:
                         "user_id": user_id,
                         "username": user.username,
                         "text": normalized,
-                        "at": datetime.utcnow().isoformat(),
+                        "at": datetime.utcnow().isoformat() + "Z",
                     },
                 )
 

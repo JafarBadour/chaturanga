@@ -94,10 +94,19 @@ const ChessBoard = ({
       // If a piece is selected and we click on a possible move square
       if (selectedSquare && possibleMoves.includes(square)) {
         if (serverControlled) {
+          const from = selectedSquare;
           setSelectedSquare(null);
           setPossibleMoves([]);
+          const moveResult = engine.makeMove(from, square);
+          if (moveResult?.fen) {
+            const previewEngine = new ChessEngine(moveResult.fen);
+            setEngine(previewEngine);
+            setBoard(parseFEN(moveResult.fen));
+            setGameLastMove({ from, to: square });
+            setGameState(previewEngine.getGameState());
+          }
           if (onMove) {
-            onMove({ from: selectedSquare, to: square });
+            onMove({ from, to: square });
           }
           return;
         }

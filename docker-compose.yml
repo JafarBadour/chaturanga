@@ -1,21 +1,23 @@
 services:
   db:
-    image: postgres:16-alpine
+    image: mysql:8.4
     container_name: chaturanga-db
     environment:
-      POSTGRES_USER: chaturanga
-      POSTGRES_PASSWORD: chaturanga
-      POSTGRES_DB: chaturanga
+      MYSQL_ROOT_PASSWORD: chaturanga
+      MYSQL_USER: chaturanga
+      MYSQL_PASSWORD: chaturanga
+      MYSQL_DATABASE: chaturanga
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     ports:
-      - "5432:5432"
+      - "3306:3306"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U chaturanga -d chaturanga"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-pchaturanga"]
       interval: 5s
       timeout: 5s
       retries: 10
-      start_period: 10s
+      start_period: 30s
 
   redis:
     image: redis:7-alpine
@@ -43,7 +45,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: "postgresql+psycopg2://chaturanga:chaturanga@db:5432/chaturanga"
+      DATABASE_URL: "mysql+pymysql://chaturanga:chaturanga@db:3306/chaturanga?charset=utf8mb4"
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
       CORS_ORIGINS: '["http://localhost:3000","http://127.0.0.1:3000"]'
       DEBUG: "false"
@@ -70,4 +72,4 @@ services:
       REACT_APP_API_URL: "http://localhost:8000"
 
 volumes:
-  postgres_data:
+  mysql_data:

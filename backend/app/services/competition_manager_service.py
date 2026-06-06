@@ -13,6 +13,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.db.models import Competition, CompetitionParticipant, Game, User
+from app.db.ordering import nulls_last_col
 from app.db.redis_client import get_redis
 from app.models.competition import CompetitionPendingMatch
 from app.services.realtime_events import publish_comp_broadcast, publish_comp_match, publish_user
@@ -865,7 +866,7 @@ class CompetitionManagerService:
                 Game.status == "finished",
                 ((Game.white_user_id == user_id) | (Game.black_user_id == user_id)),
             )
-            .order_by(Game.finished_at.desc().nullslast(), Game.created_at.desc())
+            .order_by(*nulls_last_col(Game.finished_at, asc=False), Game.created_at.desc())
             .first()
         )
         if game is None:

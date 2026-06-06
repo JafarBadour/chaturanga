@@ -56,7 +56,7 @@ class ChessAnalyzer:
             print(f"✅ Stockfish engine started successfully")
         except Exception as e:
             print(f"❌ Error starting engine: {e}")
-            sys.exit(1)
+            raise
     
     def quit_engine(self) -> None:
         """Safely quit the engine."""

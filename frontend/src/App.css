@@ -5,6 +5,12 @@
   box-sizing: border-box;
 }
 
+html,
+body,
+#root {
+  height: 100%;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background: #161512;
@@ -12,7 +18,9 @@ body {
 
 .layout {
   display: flex;
+  height: 100%;
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .main-content {
@@ -20,6 +28,177 @@ body {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+
+/* Full-height list pages (ladder, competitions, etc.) */
+.page-shell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  width: 100%;
+  padding: clamp(16px, 2.5vw, 32px);
+  background: #161512;
+  color: #fff;
+  animation: page-fade-in 0.18s ease-out both;
+}
+
+@keyframes page-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-shell-head {
+  flex-shrink: 0;
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.page-shell-head h1 {
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.page-shell-desc {
+  color: #999;
+  font-size: clamp(13px, 1.5vw, 15px);
+  margin: 0;
+}
+
+.page-shell-toolbar {
+  flex-shrink: 0;
+  min-height: 56px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin: clamp(12px, 1.5vw, 20px) 0;
+}
+
+.page-shell-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Shared pagination footer — always rendered so table height stays stable */
+.page-shell-foot {
+  flex-shrink: 0;
+  min-height: 52px;
+  margin-top: clamp(12px, 1.5vw, 16px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.page-shell-foot button {
+  padding: 10px 20px;
+  border-radius: 6px;
+  border: 1px solid #403d39;
+  background: #262421;
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  min-width: 96px;
+}
+
+.page-shell-foot button:hover:not(:disabled) {
+  background: #2e2c28;
+}
+
+.page-shell-foot button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.page-foot-info {
+  text-align: center;
+  font-size: 14px;
+  color: #bbb;
+}
+
+.page-foot-sub {
+  display: block;
+  font-size: 12px;
+  color: #666;
+  margin-top: 2px;
+}
+
+.data-table {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: #262421;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.data-table-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.data-table-header {
+  flex-shrink: 0;
+  background: #1a1816;
+  color: #777;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.data-table-empty,
+.data-table-loading {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 120px;
+  padding: 40px 20px;
+  color: #777;
+  text-align: center;
+}
+
+.page-shell .page-loading {
+  min-height: unset;
+  flex: 1;
+  background: transparent;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #403d39;
+  border-top-color: #629924;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .lichess-sidebar .logo-text {

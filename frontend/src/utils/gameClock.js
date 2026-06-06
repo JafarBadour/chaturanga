@@ -1,3 +1,5 @@
+import { ChessEngine } from "../components/chess/ChessEngine";
+
 /** Per-side opening grace before the clock counts on a player's first turn. */
 export const START_GRACE_MS = 10_000;
 
@@ -136,6 +138,7 @@ export function applyOptimisticMoveClock(game, color) {
   const increment = game.increment_ms ?? 0;
   const nextColor = color === "white" ? "black" : "white";
   const nowIso = new Date().toISOString();
+  const moves = (game.moves || "").trim();
 
   if (color === "white") {
     return {
@@ -143,6 +146,7 @@ export function applyOptimisticMoveClock(game, color) {
       active_color: nextColor,
       last_move_at: nowIso,
       white_time_ms: Math.max(0, game.white_time_ms - elapsed) + increment,
+      moves: moves ? `${moves} …` : "…",
     };
   }
 
@@ -151,5 +155,41 @@ export function applyOptimisticMoveClock(game, color) {
     active_color: nextColor,
     last_move_at: nowIso,
     black_time_ms: Math.max(0, game.black_time_ms - elapsed) + increment,
+    moves: moves ? `${moves} …` : "…",
+  };
+}
+
+/**
+ * Apply a move locally: update board + clocks immediately so RTT is not billed
+ * to the mover and the opponent clock starts ticking right away.
+ */
+export function tryOptimisticMove(game, from, to, moverColor) {
+  if (!game || game.status !== "active") return null;
+
+  const engine = new ChessEngine(game.fen);
+  const moverTurn = moverColor === "white" ? "w" : "b";
+  if (engine.getTurn() !== moverTurn) return null;
+
+  const legal = engine.getLegalMoves(from);
+  if (!legal?.includes(to)) return null;
+
+  engine.makeMove(from, to);
+  const gs = engine.getGameState();
+
+  let next =
+    game.game_mode === "royale"
+      ? applyOptimisticRoyaleMove(game, moverColor)
+      : applyOptimisticMoveClock(game, moverColor);
+
+  return {
+    game: {
+      ...next,
+      fen: gs.fen,
+      in_check: gs.inCheck,
+      is_checkmate: gs.checkmate,
+      is_stalemate: gs.stalemate,
+    },
+    from,
+    to,
   };
 }

@@ -1,0 +1,26 @@
+# Copy to terraform.tfvars and fill in (never commit terraform.tfvars)
+
+aws_region      = "eu-west-1"
+project_name    = "chesstrikes"
+environment     = "prod"
+
+# Hostnames — single domain: app at /, API at /api/*, WebSocket at /ws
+frontend_domain = "chesstrikes.com"
+
+# Optional: ACM cert in us-east-1 for custom domain on CloudFront
+# frontend_acm_certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/..."
+
+backend_desired_count = 2
+backend_image_tag     = "latest"
+
+# MySQL — URL goes to Secrets Manager; ECS task execution role reads it at startup
+database_url = "mysql+pymysql://USER:PASSWORD@db-host.example.com:3306/royalechess?charset=utf8mb4"
+
+rds_region            = "us-east-1"
+rds_security_group_id = "sg-xxxxxxxx"
+# rds_vpc_id = "vpc-xxxxxxxx"  # optional: same VPC as ECS → SG-based DB access
+
+jwt_secret_key = "replace-with-long-random-string"
+internal_jwt   = "replace-with-another-long-random-string"
+
+# cors_origins = ["https://extra-origin.example.com"]

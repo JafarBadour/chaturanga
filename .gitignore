@@ -88,6 +88,15 @@ coverage.xml
 *.db
 *.sqlite3
 
+# Terraform
+terraform/.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.*
+terraform/terraform.tfvars
+terraform/crash.log
+terraform/override.tf
+terraform/override.tf.json
+
 # Chess analysis output files
 *.json
 !package.json

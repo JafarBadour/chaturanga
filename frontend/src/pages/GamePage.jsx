@@ -8,11 +8,10 @@ import { useWebSocket } from "../context/WebSocketContext";
 import { api } from "../api/client";
 import { playClockTick, playStrikeSword, shouldPlayClockTick, unlockGameAudio } from "../utils/gameSounds";
 import {
-  applyOptimisticMoveClock,
-  applyOptimisticRoyaleMove,
   liveRoyaleClockDisplay,
   liveRoyaleMoveTimerMs,
   liveStandardClockMs,
+  tryOptimisticMove,
 } from "../utils/gameClock";
 import "./GamePage.css";
 
@@ -39,10 +38,31 @@ function royaleBarClock(royaleClock, barActive) {
   };
 }
 
+function useGameBoardSize() {
+  function calc() {
+    // subtract: sidebar (340px) + gap (24px) + page padding (48px)
+    const maxW = window.innerWidth - 412;
+    // subtract: top bar (48px) + two clocks (72px each) + player bars (32px) + padding (48px)
+    const maxH = window.innerHeight - 272;
+    return Math.max(320, Math.min(maxW, maxH, 900));
+  }
+
+  const [size, setSize] = useState(calc);
+
+  useEffect(() => {
+    function recalc() { setSize(calc()); }
+    window.addEventListener("resize", recalc);
+    return () => window.removeEventListener("resize", recalc);
+  }, []);
+
+  return size;
+}
+
 export default function GamePage() {
   const { gameId } = useParams();
   const { user, refreshUser } = useAuth();
   const navigate = useNavigate();
+  const boardSize = useGameBoardSize();
   const [game, setGame] = useState(null);
   const [whiteTime, setWhiteTime] = useState(0);
   const [blackTime, setBlackTime] = useState(0);
@@ -60,10 +80,12 @@ export default function GamePage() {
   const prevMovesRef = useRef("");
   const timeoutSentRef = useRef(false);
   const flagSentRef = useRef(false);
+  const pendingMoveRef = useRef(false);
   const lastTickBucketRef = useRef(null);
   const activeColorRef = useRef("white");
 
   const applyClockState = useCallback((data) => {
+    pendingMoveRef.current = false;
     const nextGame = data.game;
     gameClockRef.current = nextGame;
     setGame(nextGame);
@@ -117,6 +139,7 @@ export default function GamePage() {
         applyClockState(data);
         refreshUser();
       } else if (data.type === "move_error") {
+        pendingMoveRef.current = false;
         if (data.game) {
           applyClockState(data);
         }
@@ -309,21 +332,27 @@ export default function GamePage() {
   const oppStrikes = isWhite ? game.black_strikes : game.white_strikes;
 
   const handleMove = (moveResult) => {
-    if (!myTurn) return;
+    if (!myTurn || pendingMoveRef.current) return;
+
     const mover = isWhite ? "white" : "black";
+    const optimistic = tryOptimisticMove(game, moveResult.from, moveResult.to, mover);
+    if (!optimistic) return;
+
+    pendingMoveRef.current = true;
+    gameClockRef.current = optimistic.game;
+    activeColorRef.current = optimistic.game.active_color;
+    setGame(optimistic.game);
+
     if (isRoyale) {
-      setGame((current) => {
-        const next = applyOptimisticRoyaleMove(current, mover);
-        gameClockRef.current = next;
-        return next;
-      });
-      activeColorRef.current = isWhite ? "black" : "white";
       timeoutSentRef.current = false;
       setClockTick((t) => t + 1);
+      setMoveTimer(liveRoyaleMoveTimerMs(optimistic.game));
     } else {
-      setGame((current) => applyOptimisticMoveClock(current, mover));
-      activeColorRef.current = isWhite ? "black" : "white";
+      const { whiteMs, blackMs } = liveStandardClockMs(optimistic.game);
+      setWhiteTime(whiteMs);
+      setBlackTime(blackMs);
     }
+
     send({
       type: "move",
       game_id: gameId,
@@ -452,7 +481,7 @@ export default function GamePage() {
             <ChessBoard
               fen={game.fen}
               orientation={orientation}
-              size={480}
+              size={boardSize}
               enableMoves={boardInteractive}
               serverControlled
               inCheck={game.in_check}

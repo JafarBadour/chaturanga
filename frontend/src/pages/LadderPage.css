@@ -1,150 +1,5 @@
 .ladder-page {
-  flex: 1;
-  padding: 32px;
-  background: #161512;
-  min-height: 100vh;
-  color: #fff;
-  max-width: 900px;
-}
-
-.ladder-page h1 {
-  font-size: 2rem;
-  margin-bottom: 8px;
-}
-
-.ladder-desc {
-  color: #999;
-  margin-bottom: 28px;
-}
-
-.ladder-table {
-  background: #262421;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.ladder-header-row,
-.ladder-row {
-  display: grid;
-  grid-template-columns: 48px 1fr 80px 64px 120px;
-  padding: 12px 20px;
-  align-items: center;
-  font-size: 14px;
-}
-
-.ladder-header-row {
-  background: #1a1816;
-  color: #777;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.ladder-row {
-  border-top: 1px solid #302e2b;
-}
-
-.ladder-row.highlight {
-  background: #2a3320;
-}
-
-.ladder-row .rank {
-  color: #777;
-  font-weight: 600;
-}
-
-.ladder-row .name {
-  font-weight: 600;
-}
-
-.ladder-row .rating {
-  color: #629924;
-  font-weight: 700;
-}
-
-.ladder-row .record {
-  color: #999;
-  font-size: 13px;
-}
-
-.empty-ladder {
-  padding: 40px;
-  text-align: center;
-  color: #777;
-}
-
-.ladder-mode-tabs,
-.ladder-pool-tabs {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-}
-
-.ladder-mode-tab,
-.ladder-pool-tab {
-  padding: 10px 18px;
-  border-radius: 6px;
-  border: 1px solid #403d39;
-  background: #262421;
-  color: #bbb;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
-}
-
-.ladder-mode-tab:hover,
-.ladder-pool-tab:hover {
-  background: #302e2b;
-  color: #fff;
-}
-
-.ladder-mode-tab.active {
-  background: #3d3829;
-  border-color: #629924;
-  color: #fff;
-}
-
-.ladder-pool-tab.active {
-  background: #2a3320;
-  border-color: #629924;
-  color: #fff;
-}
-
-.ladder-my-rating {
-  background: #262421;
-  border-radius: 8px;
-  padding: 14px 18px;
-  margin-bottom: 20px;
-  font-size: 14px;
-  color: #ccc;
-}
-
-.ladder-my-rating strong {
-  color: #629924;
-  font-size: 1.25rem;
-  margin-left: 4px;
-}
-
-.ladder-my-record {
-  display: block;
-  margin-top: 6px;
-  color: #888;
-  font-size: 13px;
-}
-
-.ladder-loading {
-  min-height: 200px;
-  background: transparent;
-}
-
-.ladder-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 16px;
-  margin-bottom: 20px;
+  /* uses shared .page-shell layout from App.css */
 }
 
 .ladder-sort {
@@ -158,7 +13,7 @@
 }
 
 .ladder-sort select {
-  min-width: 220px;
+  min-width: min(220px, 100%);
   padding: 10px 12px;
   border-radius: 6px;
   border: 1px solid #403d39;
@@ -202,37 +57,81 @@
   background: #2a3320;
 }
 
-.ladder-pagination {
-  display: flex;
+.ladder-header-row,
+.ladder-row {
+  display: grid;
+  grid-template-columns:
+    minmax(40px, 56px)
+    minmax(120px, 1fr)
+    minmax(64px, 96px)
+    minmax(56px, 80px)
+    minmax(100px, 140px);
+  padding: clamp(10px, 1.2vw, 12px) clamp(12px, 2vw, 20px);
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 16px;
+  font-size: clamp(13px, 1.4vw, 14px);
+  gap: 8px;
 }
 
-.ladder-pagination button {
-  padding: 10px 16px;
-  border-radius: 6px;
-  border: 1px solid #403d39;
-  background: #262421;
-  color: #fff;
-  cursor: pointer;
+.ladder-header-row {
+  /* styled via .data-table-header in App.css */
 }
 
-.ladder-pagination button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
+.ladder-row {
+  border-top: 1px solid #302e2b;
 }
 
-.ladder-page-indicator {
-  text-align: center;
-  font-size: 14px;
-  color: #bbb;
+.ladder-row.highlight {
+  background: #2a3320;
 }
 
-.ladder-page-count {
-  display: block;
-  font-size: 12px;
+.ladder-row .rank {
   color: #777;
-  margin-top: 2px;
+  font-weight: 600;
+}
+
+.ladder-row .name {
+  font-weight: 600;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ladder-row .rating {
+  color: #629924;
+  font-weight: 700;
+}
+
+.ladder-row .record {
+  color: #999;
+  font-size: 13px;
+}
+
+.empty-ladder {
+  padding: 40px;
+  text-align: center;
+  color: #777;
+}
+
+
+@media (max-width: 720px) {
+  .ladder-header-row,
+  .ladder-row {
+    grid-template-columns: 40px 1fr 72px;
+  }
+
+  .ladder-header-row span:nth-child(4),
+  .ladder-header-row span:nth-child(5),
+  .ladder-row .games,
+  .ladder-row .record {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .ladder-header-row,
+  .ladder-row {
+    grid-template-columns: 36px 1fr 64px;
+    padding-inline: 12px;
+  }
 }

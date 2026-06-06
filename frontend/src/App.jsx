@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { WebSocketProvider } from "./context/WebSocketContext";
 import { NotificationProvider } from "./context/NotificationContext";
+import { BRAND_TITLE } from "./constants/brand";
 import { SideBar } from "./components/SideBar";
 import AppTopBar from "./components/AppTopBar";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -37,6 +38,10 @@ function AppLayout({ children, showSidebar = true }) {
 }
 
 function App() {
+  useEffect(() => {
+    document.title = BRAND_TITLE;
+  }, []);
+
   return (
     <AuthProvider>
       <WebSocketProvider>

@@ -1,8 +1,9 @@
 """ELO rating calculations and updates."""
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, load_only
 
 from app.db.models import Game, User, UserRating
+from app.db.ordering import nulls_first_col
 from app.utils.rating_pools import (
     get_rating_pool,
     get_user_rating,
@@ -78,8 +79,26 @@ class RatingService:
 
         games = (
             db.query(Game)
+            .options(
+                load_only(
+                    Game.id,
+                    Game.white_user_id,
+                    Game.black_user_id,
+                    Game.time_control,
+                    Game.game_mode,
+                    Game.rating_pool,
+                    Game.white_rating_before,
+                    Game.black_rating_before,
+                    Game.white_rating_after,
+                    Game.black_rating_after,
+                    Game.status,
+                    Game.result,
+                    Game.finished_at,
+                    Game.created_at,
+                )
+            )
             .filter(Game.status == "finished", Game.result.isnot(None))
-            .order_by(Game.finished_at.asc().nullsfirst(), Game.created_at.asc())
+            .order_by(*nulls_first_col(Game.finished_at), Game.created_at.asc())
             .all()
         )
 

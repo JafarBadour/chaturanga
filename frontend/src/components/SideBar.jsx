@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Home, Trophy, LogOut, LogIn, UserPlus, User, Medal } from "lucide-react";
+import { BRAND_TITLE } from "../constants/brand";
 import { useAuth } from "../context/AuthContext";
 import "./SideBar.css";
 
@@ -18,7 +19,7 @@ export const SideBar = () => {
 
   return (
     <aside className="side-bar lichess-sidebar">
-      <Link to="/play" className="logo-link">
+      <Link to="/play" className="logo-link" title={BRAND_TITLE}>
         <span className="logo-text">♟</span>
       </Link>
 
@@ -51,7 +52,7 @@ export const SideBar = () => {
             <span className="user-rating">{user.ratings?.blitz?.rating ?? user.rating}</span>
           </Link>
 
-          <button className="icon logout-icon" onClick={handleLogout} title="Logout">
+          <button type="button" className="icon logout-icon" onClick={handleLogout} title="Logout">
             <LogOut size={20} />
           </button>
         </>

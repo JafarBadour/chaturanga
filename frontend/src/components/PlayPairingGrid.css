@@ -1,0 +1,196 @@
+/* Lichess-style quick pairing grid
+   – 3 columns × 4 rows, individual rounded tiles
+   – Fills available height — scales with viewport & zoom automatically
+*/
+
+.play-pairing-grid-wrap {
+  position: relative;
+  width: 100%;
+}
+
+/* ── Background decorations ── */
+.bg-deco {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+  color: #fff;
+  opacity: 0.05;
+}
+
+.bg-deco-sword-left {
+  width: 7%;
+  max-width: 60px;
+  top: -5%;
+  left: 2%;
+  transform: rotate(-22deg);
+  transform-origin: bottom center;
+}
+
+.bg-deco-sword-right {
+  width: 7%;
+  max-width: 60px;
+  top: -5%;
+  right: 2%;
+  transform: rotate(22deg);
+  transform-origin: bottom center;
+}
+
+.bg-deco-rook {
+  width: 30%;
+  max-width: 260px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.04;
+}
+
+.royale-mode .bg-deco        { color: #d4a843; opacity: 0.09; }
+.royale-mode .bg-deco-rook   { opacity: 0.06; }
+
+/* ── Grid ── */
+.play-pairing-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: clamp(6px, 0.9vw, 11px);
+  padding-top: clamp(6px, 0.9vw, 11px);
+  background: transparent;
+  width: 100%;
+  /* cap height — feel right at any zoom level */
+  height: min(72svh, 560px);
+
+  font-size: clamp(14px, 2vw + 1.2vh, 36px);
+  font-family: Roboto, 'Noto Sans', sans-serif;
+  font-weight: 300;
+}
+
+/* ── Tile ── */
+.play-pairing-cell {
+  background: hsla(37, 7%, 19%, 0.9);
+  border: none;
+  border-radius: 7px;
+  color: #b0aca6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: inherit;
+  padding: 0.3em 0.3em 0.4em;
+  transition: background 0.12s, color 0.12s, opacity 0.12s;
+}
+
+.play-pairing-cell:hover:not(:disabled) {
+  background: hsla(37, 28%, 28%, 0.95);
+  color: #fff;
+}
+
+/* ── Empty placeholder ── */
+.play-pairing-cell-empty {
+  background: transparent;
+  pointer-events: none;
+}
+
+/* ── Dimmed ── */
+.play-pairing-cell.dimmed:not(:disabled)            { opacity: 0.35; }
+.play-pairing-cell.dimmed:hover:not(:disabled)       { opacity: 0.7; }
+
+/* ── Seeking ── */
+.play-pairing-cell.seeking {
+  box-shadow: 0 4px 18px rgba(0,0,0,0.5), 0 0 0 2px #629924;
+  background: hsla(90, 40%, 18%, 0.95);
+  color: #fff;
+}
+.play-pairing-cell.seeking:hover { background: hsla(90, 40%, 22%, 0.95); }
+
+/* ── Disabled / Custom ── */
+.play-pairing-cell.disabled-cell {
+  cursor: default;
+  color: #555;
+  border-color: transparent;
+}
+.play-pairing-cell.disabled-cell .cell-primary {
+  font-size: 0.75em;
+  font-weight: 400;
+  color: #555;
+}
+
+/* ── Spinner ── */
+.play-pairing-cell .seek-spinner {
+  width: 1.8em;
+  height: 1.8em;
+  flex: 0 0 auto;
+  border: 3px solid rgba(255,255,255,0.12);
+  border-top-color: #629924;
+  border-radius: 50%;
+  animation: play-pairing-spin 0.75s linear infinite;
+  margin-bottom: 0.4em;
+}
+.play-pairing-cell .seek-cancel-label {
+  font-size: 0.55em;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.play-pairing-cell.seeking:hover .seek-cancel-label { color: #e6912c; }
+
+@keyframes play-pairing-spin { to { transform: rotate(360deg); } }
+
+/* ── Cell text ── */
+.cell-primary {
+  display: block;
+  font-size: 2.2em;
+  line-height: 1.2;
+  letter-spacing: 0.04em;
+  color: inherit;
+}
+.cell-label {
+  font-size: 0.8em;
+  color: #666;
+  line-height: 1;
+  margin-top: 0.3em;
+}
+.play-pairing-cell:hover:not(:disabled) .cell-label { color: #aaa; }
+
+/* ── Royale gold theme ── */
+.royale-mode .play-pairing-cell {
+  background: hsla(37, 22%, 17%, 0.92);
+  color: #c8a96e;
+  border: 1px solid hsla(40, 35%, 30%, 0.4);
+  animation: royale-pulse 6s ease-in-out infinite;
+  animation-delay: var(--royale-sync, 0ms);
+}
+.royale-mode .play-pairing-cell:hover:not(:disabled) {
+  background: hsla(40, 35%, 24%, 0.98);
+  color: #f0d080;
+  border-color: hsla(43, 60%, 50%, 0.5);
+  animation: none;
+  box-shadow: 0 0 18px hsla(43, 90%, 55%, 0.35);
+}
+.royale-mode .cell-primary                                           { color: #e8c878; }
+.royale-mode .play-pairing-cell:hover:not(:disabled) .cell-primary  { color: #f8e090; }
+.royale-mode .cell-label                                             { color: #7a6030; }
+.royale-mode .play-pairing-cell:hover:not(:disabled) .cell-label    { color: #b89050; }
+
+.royale-mode .play-pairing-cell.seeking {
+  box-shadow: 0 4px 18px rgba(0,0,0,0.5), 0 0 0 2px #d4a843;
+  background: hsla(43, 50%, 18%, 0.95);
+  color: #f0d080;
+}
+.royale-mode .play-pairing-cell.seeking:hover { background: hsla(43, 50%, 22%, 0.95); }
+.royale-mode .play-pairing-cell .seek-spinner { border-top-color: #d4a843; }
+.royale-mode .play-pairing-cell.seeking:hover .seek-cancel-label { color: #f0d080; }
+
+@keyframes royale-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 hsla(43, 80%, 55%, 0);
+    border-color: hsla(40, 35%, 30%, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 14px hsla(43, 80%, 55%, 0.25);
+    border-color: hsla(43, 60%, 45%, 0.75);
+  }
+}

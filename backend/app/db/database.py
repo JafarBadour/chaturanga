@@ -11,7 +11,7 @@ class Base(DeclarativeBase):
 
 
 def _engine_kwargs() -> dict:
-    kwargs = {}
+    kwargs: dict = {"pool_pre_ping": True}
     if settings.database_url.startswith("sqlite"):
         kwargs["connect_args"] = {"check_same_thread": False}
     return kwargs

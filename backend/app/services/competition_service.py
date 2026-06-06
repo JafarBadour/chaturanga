@@ -8,6 +8,7 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session, joinedload
 
 from app.db.models import Competition, CompetitionParticipant, Game, User
+from app.db.ordering import nulls_last_col
 from app.models.competition import (
     CompetitionCreate,
     CompetitionDetail,
@@ -395,12 +396,12 @@ class CompetitionService:
         total = query.count()
         if status == "done":
             order = (
-                Competition.ends_at.desc().nullslast(),
+                *nulls_last_col(Competition.ends_at, asc=False),
                 Competition.created_at.desc(),
             )
         else:
             order = (
-                Competition.starts_at.asc().nullslast(),
+                *nulls_last_col(Competition.starts_at, asc=True),
                 Competition.created_at.desc(),
             )
         rows = query.order_by(*order).offset(offset).limit(limit).all()

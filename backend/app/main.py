@@ -17,7 +17,6 @@ from app.api.competition_routes import router as competition_router
 from app.api.ladder_routes import router as ladder_router
 from app.api.notification_routes import router as notification_router
 from app.api.ws_routes import router as ws_router
-from app.services.chess_service import chess_service
 from app.db.redis_client import close_redis, init_redis
 from app.services.competition_manager_loop import run_competition_manager
 from app.services.realtime_events import run_realtime_listener
@@ -30,14 +29,8 @@ _comp_manager_task: asyncio.Task | None = None
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager"""
-    print("♟️  Starting Chaturanga Chess Platform...")
+    print("♟️  Starting ChessStrikes...")
     print("=" * 40)
-
-    try:
-        chess_service.start_engine()
-        print("✅ Stockfish analyzer initialized")
-    except Exception as e:
-        print(f"⚠️  Stockfish unavailable (analysis disabled): {e}")
 
     global _match_listener_task, _comp_manager_task
     try:
@@ -66,13 +59,12 @@ async def lifespan(app: FastAPI):
         except asyncio.CancelledError:
             pass
     await close_redis()
-    chess_service.stop_engine()
     print("✅ Shutdown complete")
 
 
 app = FastAPI(
     title=settings.app_name,
-    description="Online chess platform with ladder matchmaking and Stockfish analysis",
+    description="Online chess platform with ladder matchmaking and competitions",
     version=settings.app_version,
     debug=settings.debug,
     lifespan=lifespan,
@@ -124,7 +116,7 @@ async def health_check():
         pass
     return {
         "status": "healthy" if redis_ok else "degraded",
-        "engine": chess_service.health_check(),
+        "engine": {"status": "disabled"},
         "redis": redis_ok,
     }
 

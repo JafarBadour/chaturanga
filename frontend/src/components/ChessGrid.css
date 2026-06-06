@@ -9,15 +9,15 @@
 
 .chess-grid {
   display: grid;
-  grid-template-columns: repeat(3, 120px); /* 3 columns */
-  grid-template-rows: repeat(4, 80px);    /* 4 rows */
-  gap: 2px; /* Small gap to create the grid line effect */
-  background-color: #404040; /* Color of the "lines" */
+  grid-template-columns: repeat(3, 120px);
+  grid-template-rows: repeat(4, 80px);
+  gap: 2px;
+  background-color: #404040;
   border: 2px solid #404040;
 }
 
 .grid-button {
-  background-color: #262626; /* Button face color */
+  background-color: #262626;
   border: none;
   color: #bababa;
   display: flex;
@@ -30,7 +30,7 @@
   position: relative;
 }
 
-.grid-button:hover {
+.grid-button:hover:not(:disabled) {
   background-color: #333333;
 }
 
@@ -92,7 +92,104 @@
   margin-top: 4px;
 }
 
-/* Specific styling for the Custom button */
-.grid-button:last-child .time-text {
-  font-size: 1.1rem;
+/* ── Lichess-style hero grid (play page) ── */
+.chess-container.chess-hero {
+  padding: 0;
+  background: transparent;
+  width: 100%;
+}
+
+.chess-hero .chess-grid-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.chess-hero .chess-grid-watermark {
+  position: absolute;
+  width: min(72%, 320px);
+  height: auto;
+  right: -4%;
+  top: 18%;
+  color: #fff;
+  opacity: 0.06;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.chess-hero .chess-grid {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(4, minmax(96px, 1fr));
+  gap: 8px;
+  background: transparent;
+  border: none;
+}
+
+.chess-hero .grid-button {
+  background: #34312e;
+  border-radius: 10px;
+  color: #fff;
+  min-height: 96px;
+  font-family: inherit;
+}
+
+.chess-hero .grid-button:hover:not(:disabled) {
+  background: #3d3a37;
+}
+
+.chess-hero .grid-button.dimmed {
+  opacity: 0.45;
+}
+
+.chess-hero .grid-button.dimmed:hover:not(:disabled) {
+  opacity: 0.75;
+  background: #3d3a37;
+}
+
+.chess-hero .grid-button.seeking {
+  background: #3d3a37;
+  box-shadow: inset 0 0 0 2px #e6912c;
+}
+
+.chess-hero .grid-button.seeking:hover {
+  background: #454240;
+}
+
+.chess-hero .grid-button .seek-spinner {
+  border-top-color: #e6912c;
+}
+
+.chess-hero .time-text {
+  font-size: clamp(1.6rem, 4vw, 2rem);
+  font-weight: 400;
+  color: #fff;
+  line-height: 1.1;
+}
+
+.chess-hero .label-text {
+  font-size: 0.85rem;
+  color: #999;
+  opacity: 1;
+  margin-top: 6px;
+}
+
+.chess-hero .grid-button.custom-button {
+  color: #999;
+  cursor: default;
+  opacity: 0.85;
+}
+
+.chess-hero .grid-button.custom-button .time-text {
+  font-size: clamp(1.1rem, 3vw, 1.35rem);
+  color: #999;
+  font-weight: 400;
+}
+
+@media (min-width: 520px) {
+  .chess-hero .chess-grid {
+    grid-template-rows: repeat(4, 108px);
+    gap: 9px;
+  }
 }

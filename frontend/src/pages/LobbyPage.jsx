@@ -1,14 +1,27 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useWebSocket } from "../context/WebSocketContext";
-import ChessGrid from "../components/ChessGrid";
-import ChessRoyale from "../components/ChessRoyale";
+import PlayPairingGrid from "../components/PlayPairingGrid";
 import "./LobbyPage.css";
+
+const MODES = {
+  royale: {
+    id: "royale",
+    label: "Chess Royale",
+    desc: "Per-move timer — miss twice and you forfeit. Pick the same tier as your opponent.",
+  },
+  standard: {
+    id: "standard",
+    label: "Standard",
+    desc: "Classic chess with increment clocks.",
+  },
+};
 
 export default function LobbyPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [gameMode, setGameMode] = useState("royale");
   const [seekingMode, setSeekingMode] = useState(null);
   const [seekError, setSeekError] = useState("");
 
@@ -34,6 +47,11 @@ export default function LobbyPage() {
 
   const { send, connected } = useWebSocket(handleWsMessage);
 
+  useEffect(() => {
+    if (!seekingMode) return;
+    setGameMode(seekingMode.startsWith("royale/") ? "royale" : "standard");
+  }, [seekingMode]);
+
   const handlePlay = (tc) => {
     if (seekingMode === tc) {
       send({ type: "cancel_seek" });
@@ -47,49 +65,57 @@ export default function LobbyPage() {
     send({ type: "seek", time_control: tc });
   };
 
+  const activeMode = MODES[gameMode];
+
   return (
     <div className="lobby-page">
       <div className="lobby-header">
-        <h1>Play</h1>
-        <div className="player-info">
-          <span className="player-name">{user?.username}</span>
-          <span className="player-rating">Blitz {user?.ratings?.blitz?.rating ?? user?.rating}</span>
+        <div>
+          <h1>Play</h1>
+          <p className="lobby-welcome">
+            {user?.username} · Blitz {user?.ratings?.blitz?.rating ?? user?.rating ?? 1500}
+          </p>
         </div>
       </div>
 
-      <div className="lobby-content">
-        <div className="lobby-panels-stack">
-          <div className="lobby-panel royale-panel">
-            <h2>Chess Royale</h2>
-            <p className="lobby-desc">
-              Per-move timer. Miss twice and you forfeit. Both players must pick the same tier.
-            </p>
+      {!connected && <p className="connection-warning">Connecting to server…</p>}
+      {seekError && <p className="connection-warning seek-error">{seekError}</p>}
 
-            <div className="pairing-grid-wrap">
-              <ChessRoyale seekingMode={seekingMode} onSelect={handlePlay} />
+      <div className="lobby-layout">
+        <div className="lobby-main">
+          <div className="lobby-play-card">
+            <div className="lobby-mode-dock" role="tablist" aria-label="Game mode">
+              {Object.values(MODES).map((mode) => (
+                <button
+                  key={mode.id}
+                  type="button"
+                  role="tab"
+                  id={`lobby-tab-${mode.id}`}
+                  aria-selected={gameMode === mode.id}
+                  aria-controls={`lobby-panel-${mode.id}`}
+                  className={`lobby-mode-tab${gameMode === mode.id ? " active" : ""}${
+                    mode.id === "royale" ? " royale-tab" : ""
+                  }`}
+                  onClick={() => setGameMode(mode.id)}
+                >
+                  {mode.label}
+                </button>
+              ))}
+            </div>
+
+            <div
+              className="lobby-mode-panel"
+              role="tabpanel"
+              id={`lobby-panel-${gameMode}`}
+              aria-labelledby={`lobby-tab-${gameMode}`}
+            >
+              <p className="lobby-mode-desc">{activeMode.desc}</p>
+              <PlayPairingGrid mode={gameMode} seekingMode={seekingMode} onSelect={handlePlay} />
             </div>
           </div>
-
-          <div className="lobby-panel">
-            <h2>Quick pairing</h2>
-            <p className="lobby-desc">
-              Classic time controls with increment. Both players must pick the same clock.
-            </p>
-
-            <div className="pairing-grid-wrap">
-              <ChessGrid seekingMode={seekingMode} onSelect={handlePlay} />
-            </div>
-          </div>
-
-          {!connected && (
-            <p className="connection-warning">Connecting to server...</p>
-          )}
-          {seekError && (
-            <p className="connection-warning seek-error">{seekError}</p>
-          )}
         </div>
 
-        <div className="lobby-stats">
+        <aside className="lobby-stats">
           <h3>Your ratings</h3>
           <div className="rating-pools-grid">
             {[
@@ -115,7 +141,7 @@ export default function LobbyPage() {
               <p className="lobby-no-ratings">Play a rated game to appear on the ladder.</p>
             )}
           </div>
-        </div>
+        </aside>
       </div>
     </div>
   );

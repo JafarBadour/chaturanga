@@ -9,6 +9,7 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.db.models import Game, User
+from app.db.ordering import nulls_last_col
 from app.models.game import (
     DrawOfferInfo,
     GameHistoryItem,
@@ -517,7 +518,7 @@ class GamePlayService:
 
         total = query.count()
         games = (
-            query.order_by(Game.finished_at.desc().nullslast(), Game.created_at.desc())
+            query.order_by(*nulls_last_col(Game.finished_at, asc=False), Game.created_at.desc())
             .offset(offset)
             .limit(limit)
             .all()
