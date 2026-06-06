@@ -1,6 +1,9 @@
 """
-Main FastAPI application for the Chess Analysis API.
+Main FastAPI application for the Chaturanga chess platform.
 """
+
+import asyncio
+import logging
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,41 +11,73 @@ from contextlib import asynccontextmanager
 
 from app.core.config import settings
 from app.api.chess_routes import router as chess_router
+from app.api.auth_routes import router as auth_router
+from app.api.game_routes import router as game_router
+from app.api.competition_routes import router as competition_router
+from app.api.ladder_routes import router as ladder_router
+from app.api.notification_routes import router as notification_router
+from app.api.ws_routes import router as ws_router
 from app.services.chess_service import chess_service
+from app.db.redis_client import close_redis, init_redis
+from app.services.competition_manager_loop import run_competition_manager
+from app.services.realtime_events import run_realtime_listener
+
+logger = logging.getLogger(__name__)
+_match_listener_task: asyncio.Task | None = None
+_comp_manager_task: asyncio.Task | None = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager"""
-    # Startup
-    print("♟️  Starting Chess Analysis API...")
+    print("♟️  Starting Chaturanga Chess Platform...")
     print("=" * 40)
-    
+
     try:
         chess_service.start_engine()
-        print("✅ Chess analyzer initialized successfully")
+        print("✅ Stockfish analyzer initialized")
     except Exception as e:
-        print(f"❌ Failed to initialize chess analyzer: {e}")
+        print(f"⚠️  Stockfish unavailable (analysis disabled): {e}")
+
+    global _match_listener_task, _comp_manager_task
+    try:
+        await init_redis()
+        print("✅ Redis connected (realtime pub/sub)")
+        _match_listener_task = asyncio.create_task(run_realtime_listener())
+        _comp_manager_task = asyncio.create_task(run_competition_manager())
+        print("✅ Competition manager started")
+    except Exception as e:
+        print(f"❌ Redis required for matchmaking: {e}")
         raise
-    
+
     yield
-    
-    # Shutdown
-    print("🔚 Shutting down Chess Analysis API...")
+
+    print("🔚 Shutting down...")
+    if _match_listener_task:
+        _match_listener_task.cancel()
+        try:
+            await _match_listener_task
+        except asyncio.CancelledError:
+            pass
+    if _comp_manager_task:
+        _comp_manager_task.cancel()
+        try:
+            await _comp_manager_task
+        except asyncio.CancelledError:
+            pass
+    await close_redis()
     chess_service.stop_engine()
     print("✅ Shutdown complete")
 
 
-# Create FastAPI application
 app = FastAPI(
     title=settings.app_name,
-    description="API for analyzing chess positions using Stockfish engine",
+    description="Online chess platform with ladder matchmaking and Stockfish analysis",
     version=settings.app_version,
     debug=settings.debug,
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
-# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
@@ -51,40 +86,56 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
 app.include_router(chess_router)
+app.include_router(auth_router)
+app.include_router(game_router)
+app.include_router(ladder_router)
+app.include_router(competition_router)
+app.include_router(notification_router)
+app.include_router(ws_router)
 
-# Root endpoint
+
 @app.get("/")
 async def root():
-    """Root endpoint with API information"""
     return {
         "message": settings.app_name,
         "version": settings.app_version,
         "docs": "/docs",
-        "redoc": "/redoc",
-        "endpoints": {
-            "/api/v1/analyze": "POST - Complete board analysis with all moves",
-            "/api/v1/best-move": "POST - Get best move only",
-            "/api/v1/health": "GET - Health check"
-        }
+        "features": {
+            "auth": "/api/v1/auth",
+            "games": "/api/v1/games",
+            "ladder": "/api/v1/ladder",
+            "competitions": "/api/v1/competitions",
+            "websocket": "/ws?token=<jwt>",
+            "analysis": "/api/v1/analyze",
+        },
     }
 
 
-# Health check endpoint (legacy)
 @app.get("/health")
 async def health_check():
-    """Legacy health check endpoint"""
-    health_data = chess_service.health_check()
-    return health_data
+    redis_ok = False
+    try:
+        from app.db.redis_client import get_redis
+
+        await (await get_redis()).ping()
+        redis_ok = True
+    except Exception:
+        pass
+    return {
+        "status": "healthy" if redis_ok else "degraded",
+        "engine": chess_service.health_check(),
+        "redis": redis_ok,
+    }
 
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(
         "app.main:app",
         host=settings.host,
         port=settings.port,
         reload=settings.debug,
-        log_level=settings.log_level.lower()
+        log_level=settings.log_level.lower(),
     )

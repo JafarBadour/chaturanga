@@ -1,0 +1,2 @@
+stockfish    # Python wrapper for Stockfish engine
+python-chess  # Chess board representation and engine interface

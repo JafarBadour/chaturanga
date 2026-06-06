@@ -1,0 +1,420 @@
+.game-social-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.social-section {
+  background: #262421;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.social-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.social-section-head h4 {
+  font-size: 13px;
+  color: #777;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.social-mute-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  opacity: 0.75;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.social-mute-btn:hover {
+  opacity: 1;
+  background: #403d39;
+}
+
+.social-mute-btn.muted {
+  opacity: 0.5;
+}
+
+.social-muted-note {
+  color: #666;
+  font-size: 13px;
+  font-style: italic;
+  margin: 0;
+  text-align: center;
+  padding: 8px 0;
+}
+
+.reaction-burst-stage {
+  position: relative;
+  min-height: 220px;
+  margin-bottom: 8px;
+  overflow: visible;
+}
+
+.reaction-burst {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  animation: burst-rise 2s ease-out forwards;
+  z-index: 2;
+}
+
+.reaction-burst.self-burst {
+  z-index: 3;
+}
+
+.burst-emoji {
+  font-size: 8rem;
+  line-height: 1;
+  filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.5));
+}
+
+.burst-user {
+  font-size: 13px;
+  color: #999;
+  margin-top: 6px;
+}
+
+@keyframes burst-rise {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(24px) scale(0.4);
+  }
+  15% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1.1);
+  }
+  70% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-32px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-80px) scale(0.9);
+  }
+}
+
+.reaction-picker {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 4px;
+}
+
+.reaction-btn {
+  aspect-ratio: 1;
+  border: 1px solid #403d39;
+  background: #1f1d1b;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1.15rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+  padding: 0;
+}
+
+.reaction-btn:hover {
+  background: #3d3829;
+  border-color: #629924;
+  transform: scale(1.12);
+}
+
+.reaction-btn:active {
+  transform: scale(0.95);
+}
+
+.reaction-emoji {
+  display: block;
+  line-height: 1;
+}
+
+.reaction-btn.react-bounce:hover .reaction-emoji {
+  animation: react-bounce 0.6s ease infinite;
+}
+
+.reaction-burst.react-bounce .burst-emoji {
+  animation: react-bounce-burst 0.6s ease infinite;
+}
+
+.reaction-btn.react-flame:hover .reaction-emoji {
+  animation: react-flame 0.45s ease infinite alternate;
+}
+
+.reaction-burst.react-flame .burst-emoji {
+  animation: react-flame-burst 0.45s ease infinite alternate;
+}
+
+.reaction-btn.react-flex:hover .reaction-emoji {
+  animation: react-flex 0.5s ease infinite;
+}
+
+.reaction-burst.react-flex .burst-emoji {
+  animation: react-flex-burst 0.5s ease infinite;
+}
+
+.reaction-btn.react-wiggle:hover .reaction-emoji {
+  animation: react-wiggle 0.4s ease infinite;
+}
+
+.reaction-burst.react-wiggle .burst-emoji {
+  animation: react-wiggle-burst 0.4s ease infinite;
+}
+
+.reaction-btn.react-zap:hover .reaction-emoji {
+  animation: react-zap 0.35s steps(2) infinite;
+}
+
+.reaction-burst.react-zap .burst-emoji {
+  animation: react-zap-burst 0.35s steps(2) infinite;
+}
+
+.reaction-btn.react-float:hover .reaction-emoji {
+  animation: react-float 1s ease-in-out infinite;
+}
+
+.reaction-burst.react-float .burst-emoji {
+  animation: react-float-burst 1s ease-in-out infinite;
+}
+
+.reaction-btn.react-party:hover .reaction-emoji {
+  animation: react-party 0.5s ease infinite;
+}
+
+.reaction-burst.react-party .burst-emoji {
+  animation: react-party-burst 0.5s ease infinite;
+}
+
+.reaction-btn.react-pop:hover .reaction-emoji {
+  animation: react-pop 0.45s ease infinite;
+}
+
+.reaction-burst.react-pop .burst-emoji {
+  animation: react-pop-burst 0.45s ease infinite;
+}
+
+@keyframes react-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes react-bounce-burst {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes react-flame {
+  0% { transform: scale(1) rotate(-3deg); filter: hue-rotate(0deg); }
+  100% { transform: scale(1.12) rotate(3deg); filter: hue-rotate(15deg); }
+}
+
+@keyframes react-flame-burst {
+  0% { transform: scale(1) rotate(-6deg); filter: hue-rotate(0deg); }
+  100% { transform: scale(1.18) rotate(6deg); filter: hue-rotate(15deg); }
+}
+
+@keyframes react-flex {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  25% { transform: scale(1.08) rotate(-8deg); }
+  75% { transform: scale(1.08) rotate(8deg); }
+}
+
+@keyframes react-flex-burst {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  25% { transform: scale(1.12) rotate(-14deg); }
+  75% { transform: scale(1.12) rotate(14deg); }
+}
+
+@keyframes react-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-12deg); }
+  75% { transform: rotate(12deg); }
+}
+
+@keyframes react-wiggle-burst {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-18deg); }
+  75% { transform: rotate(18deg); }
+}
+
+@keyframes react-zap {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.85; }
+}
+
+@keyframes react-zap-burst {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.15); opacity: 0.9; }
+}
+
+@keyframes react-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes react-float-burst {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-24px); }
+}
+
+@keyframes react-party {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  33% { transform: rotate(-10deg) scale(1.1); }
+  66% { transform: rotate(10deg) scale(1.1); }
+}
+
+@keyframes react-party-burst {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  33% { transform: rotate(-14deg) scale(1.12); }
+  66% { transform: rotate(14deg) scale(1.12); }
+}
+
+@keyframes react-pop {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.25); }
+}
+
+@keyframes react-pop-burst {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+.chat-scroll {
+  max-height: 140px;
+  overflow-y: auto;
+  margin-bottom: 8px;
+  padding-right: 4px;
+}
+
+.chat-empty {
+  color: #555;
+  font-size: 13px;
+  font-style: italic;
+  margin: 0;
+  text-align: center;
+  padding: 12px 0;
+}
+
+.chat-line {
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.chat-line.self .chat-author {
+  color: #8bb866;
+}
+
+.chat-meta {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  margin-bottom: 2px;
+}
+
+.chat-author {
+  font-weight: 600;
+  color: #ccc;
+  font-size: 12px;
+}
+
+.chat-time {
+  color: #555;
+  font-size: 11px;
+}
+
+.chat-text {
+  color: #ddd;
+  word-break: break-word;
+  line-height: 1.35;
+}
+
+.chat-form {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+}
+
+.chat-input-wrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.chat-error {
+  margin: 0 0 8px;
+  padding: 6px 8px;
+  font-size: 12px;
+  color: #f0a070;
+  background: rgba(230, 145, 44, 0.12);
+  border-radius: 4px;
+  line-height: 1.35;
+}
+
+.chat-char-count {
+  font-size: 10px;
+  color: #555;
+  text-align: right;
+  padding-right: 2px;
+}
+
+.chat-char-count.near-limit {
+  color: #e6912c;
+}
+
+.chat-input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid #403d39;
+  border-radius: 4px;
+  background: #1f1d1b;
+  color: #eee;
+  font-size: 13px;
+}
+
+.chat-input:focus {
+  outline: none;
+  border-color: #629924;
+}
+
+.chat-send {
+  padding: 8px 12px;
+  background: #403d39;
+  border: none;
+  border-radius: 4px;
+  color: #eee;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chat-send:hover:not(:disabled) {
+  background: #629924;
+}
+
+.chat-send:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+@media (max-width: 900px) {
+  .reaction-picker {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}

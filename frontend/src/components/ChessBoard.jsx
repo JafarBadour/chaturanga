@@ -17,6 +17,9 @@ const ChessBoard = ({
   usePieceImages = true,
   enableMoves = false,
   onMove = null,
+  serverControlled = false,
+  inCheck = false,
+  checkedColor = null,
   arrows = "", // "e5->e6\e5->b4"
   arrowThickness = 24, // Default arrow thickness
   showPossibleMovesSide = "both", // "white", "black", or "both"
@@ -90,7 +93,16 @@ const ChessBoard = ({
       
       // If a piece is selected and we click on a possible move square
       if (selectedSquare && possibleMoves.includes(square)) {
-        // Make the move
+        if (serverControlled) {
+          setSelectedSquare(null);
+          setPossibleMoves([]);
+          if (onMove) {
+            onMove({ from: selectedSquare, to: square });
+          }
+          return;
+        }
+
+        // Make the move locally (offline / analysis mode)
         const moveResult = engine.makeMove(selectedSquare, square);
         setGameLastMove({ from: selectedSquare, to: square });
         
@@ -161,6 +173,20 @@ const ChessBoard = ({
     const square = getSquareNotation(row, col);
     const color = getSquareColor(row, col);
     let classes = `square square-${color}`;
+
+    if (serverControlled) {
+      const activeLastMove = lastMove;
+      if (activeLastMove && (activeLastMove.from === square || activeLastMove.to === square)) {
+        classes += ' last-move';
+      }
+      if (inCheck && checkedColor) {
+        const piece = engine.getPieceAt(square);
+        const checkedTurn = checkedColor === 'white' ? 'w' : 'b';
+        if (piece && piece.toLowerCase() === 'k' && engine.getPieceColor(piece) === checkedTurn) {
+          classes += ' in-check';
+        }
+      }
+    }
     
     // Use chess game highlighting if moves are enabled
     if (enableMoves) {
@@ -180,12 +206,14 @@ const ChessBoard = ({
       }
       
       // Check if square is part of last move
-      if (gameLastMove && (gameLastMove.from === square || gameLastMove.to === square)) {
-        classes += ' last-move';
+      if (!serverControlled) {
+        if (gameLastMove && (gameLastMove.from === square || gameLastMove.to === square)) {
+          classes += ' last-move';
+        }
       }
       
-      // Check if king is in check
-      if (gameState && gameState.inCheck) {
+      // Check if king is in check (offline mode)
+      if (!serverControlled && gameState && gameState.inCheck) {
         const piece = engine.getPieceAt(square);
         if (piece && piece.toLowerCase() === 'k' && engine.getPieceColor(piece) === engine.getTurn()) {
           classes += ' in-check';
@@ -211,7 +239,7 @@ const ChessBoard = ({
 
   // Update engine when FEN changes
   useEffect(() => {
-    if (enableMoves) {
+    if (enableMoves || serverControlled) {
       const newEngine = new ChessEngine(effectiveFen);
       setEngine(newEngine);
       setSelectedSquare(null);
@@ -219,11 +247,11 @@ const ChessBoard = ({
       setGameLastMove(null);
       setGameState(newEngine.getGameState());
     }
-  }, [effectiveFen, enableMoves]);
+  }, [effectiveFen, enableMoves, serverControlled]);
 
-  // Sync engine turn with external turn parameter
+  // Sync engine turn with external turn parameter (offline mode only)
   useEffect(() => {
-    if (enableMoves && engine) {
+    if (!enableMoves || !engine || serverControlled) return;
       const engineTurn = engine.getTurn();
       const externalTurn = effectiveTurn === 'white' ? 'w' : 'b';
       console.log('Syncing turns - Engine:', engineTurn, 'External:', externalTurn);
@@ -236,8 +264,7 @@ const ChessBoard = ({
         setEngine(newEngine);
         setGameState(newEngine.getGameState());
       }
-    }
-  }, [effectiveTurn, enableMoves, engine]);
+  }, [effectiveTurn, enableMoves, engine, serverControlled]);
 
   // Parse arrows when arrows prop changes
   useEffect(() => {
@@ -247,7 +274,7 @@ const ChessBoard = ({
 
   // Initialize board from FEN
   useEffect(() => {
-    if (enableMoves) {
+    if (enableMoves || serverControlled) {
       // Use chess engine board
       setBoard(parseFEN(engine.getFEN()));
     } else {
@@ -255,7 +282,7 @@ const ChessBoard = ({
       const boardArray = parseFEN(effectiveFen);
       setBoard(boardArray);
     }
-  }, [effectiveFen, enableMoves, engine]);
+  }, [effectiveFen, enableMoves, serverControlled, engine]);
 
   // Flip board if orientation is black
   const displayBoard = orientation === "black" ? 

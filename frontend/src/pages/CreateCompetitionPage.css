@@ -1,0 +1,294 @@
+.create-competition-page {
+  flex: 1;
+  padding: 32px 20px 48px;
+  background: #161512;
+  min-height: 100vh;
+  color: #fff;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.create-comp-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: inherit;
+  margin-bottom: 20px;
+  padding: 0;
+}
+
+.create-comp-back:hover {
+  color: #fff;
+}
+
+.create-comp-card {
+  background: #262421;
+  border-radius: 8px;
+  padding: 32px;
+}
+
+.create-comp-card h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.create-comp-subtitle {
+  color: #999;
+  margin-bottom: 28px;
+}
+
+.create-comp-section {
+  margin-bottom: 28px;
+}
+
+.create-comp-section h2 {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #777;
+  margin-bottom: 12px;
+}
+
+.create-comp-section label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #bbb;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.create-comp-section input,
+.create-comp-section textarea {
+  padding: 12px;
+  border: 1px solid #403d39;
+  border-radius: 4px;
+  background: #1a1816;
+  color: #fff;
+  font-size: 15px;
+  font-family: inherit;
+}
+
+.create-comp-section input:focus,
+.create-comp-section textarea:focus {
+  outline: none;
+  border-color: #629924;
+}
+
+.create-comp-dock {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.create-comp-dock .dock-btn {
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid #403d39;
+  background: #1f1d1b;
+  color: #bbb;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+}
+
+.create-comp-dock .dock-btn:hover {
+  background: #403d39;
+  color: #fff;
+}
+
+.create-comp-dock .dock-btn.active {
+  background: #3d4a2a;
+  border-color: #629924;
+  color: #d4e4bc;
+}
+
+.create-comp-dock .dock-btn.royale-active.active {
+  background: #3d3520;
+  border-color: #d4a843;
+  color: #f0d890;
+}
+
+.create-comp-hint {
+  color: #777;
+  font-size: 13px;
+  margin-top: 10px;
+  line-height: 1.45;
+}
+
+.create-comp-fifm-note {
+  margin-top: 12px;
+  padding: 12px 14px;
+  background: #1a1816;
+  border-left: 3px solid #629924;
+  color: #aaa;
+  font-size: 13px;
+  line-height: 1.5;
+  border-radius: 0 4px 4px 0;
+}
+
+.create-comp-format-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.format-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: 6px;
+  border: 1px solid #403d39;
+  background: #1f1d1b;
+  color: #bbb;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.format-card:hover {
+  background: #302e2b;
+}
+
+.format-card.active {
+  border-color: #629924;
+  background: #2a3320;
+}
+
+.format-card-label {
+  font-weight: 700;
+  color: #fff;
+  font-size: 15px;
+}
+
+.format-card-desc {
+  font-size: 13px;
+  color: #888;
+  line-height: 1.4;
+}
+
+.create-comp-tc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 8px;
+}
+
+.tc-btn {
+  padding: 10px 8px;
+  border-radius: 4px;
+  border: 1px solid #403d39;
+  background: #1f1d1b;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+}
+
+.tc-btn:hover {
+  background: #403d39;
+}
+
+.tc-btn.active {
+  background: #3d4a2a;
+  border-color: #629924;
+  color: #d4e4bc;
+}
+
+.create-comp-royale-tiers {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.royale-tier-row-form {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.royale-tier-name {
+  width: 56px;
+  color: #777;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.royale-tier-btns {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.create-comp-visibility {
+  margin-top: 16px;
+}
+
+.field-label {
+  display: block;
+  color: #bbb;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.create-comp-limits-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.create-comp-limits-grid label {
+  margin-bottom: 0;
+}
+
+.duration-dock {
+  margin-bottom: 12px;
+}
+
+.create-comp-error {
+  color: #e6912c;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.create-comp-submit {
+  width: 100%;
+  padding: 14px;
+  background: #629924;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.create-comp-submit:hover:not(:disabled) {
+  background: #7ab82e;
+}
+
+.create-comp-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .create-comp-card {
+    padding: 20px;
+  }
+
+  .create-comp-limits-grid {
+    grid-template-columns: 1fr;
+  }
+}

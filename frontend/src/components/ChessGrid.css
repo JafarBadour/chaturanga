@@ -1,9 +1,10 @@
 .chess-container {
-    margin-top: 2rem;
-    background-color: #1a1a1a; /* Dark background like the image */
-    padding: 20px;
-    display: inline-block;
-    border-radius: 4px;
+  margin-top: 0;
+  background-color: #1a1a1a;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  border-radius: 4px;
 }
 
 .chess-grid {
@@ -24,17 +25,59 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, opacity 0.2s;
   font-family: sans-serif;
+  position: relative;
 }
 
 .grid-button:hover {
   background-color: #333333;
 }
 
-.grid-button.active {
-  background-color: #3d3d3d;
-  color: #ffffff;
+.grid-button.dimmed {
+  opacity: 0.55;
+}
+
+.grid-button.dimmed:hover {
+  opacity: 0.85;
+  background-color: #333333;
+}
+
+.grid-button.seeking {
+  background-color: #2d3a22;
+  color: #fff;
+  cursor: pointer;
+}
+
+.grid-button.seeking:hover {
+  background-color: #3a4a2a;
+}
+
+.grid-button .seek-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid rgba(255, 255, 255, 0.15);
+  border-top-color: #629924;
+  border-radius: 50%;
+  animation: seek-spin 0.75s linear infinite;
+}
+
+.grid-button .seek-cancel-label {
+  font-size: 0.75rem;
+  margin-top: 6px;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.grid-button.seeking:hover .seek-cancel-label {
+  color: #e6912c;
+}
+
+@keyframes seek-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .time-text {

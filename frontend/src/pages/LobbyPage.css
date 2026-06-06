@@ -1,0 +1,166 @@
+.lobby-page {
+  flex: 1;
+  padding: 32px;
+  background: #161512;
+  min-height: 100vh;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.lobby-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 32px;
+  width: 100%;
+  max-width: 480px;
+}
+
+.lobby-header h1 {
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.player-info {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.player-name {
+  font-weight: 600;
+  color: #fff;
+}
+
+.player-rating {
+  color: #629924;
+  font-weight: 600;
+}
+
+.lobby-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  width: 100%;
+  max-width: 480px;
+}
+
+.lobby-panel {
+  background: #262421;
+  border-radius: 8px;
+  padding: 28px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.lobby-panel h2 {
+  font-size: 1.25rem;
+  margin-bottom: 8px;
+}
+
+.lobby-desc {
+  color: #999;
+  margin-bottom: 24px;
+  font-size: 14px;
+}
+
+.pairing-grid-wrap {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.connection-warning {
+  color: #e6912c;
+  font-size: 13px;
+  margin-top: 12px;
+}
+
+.connection-warning.seek-error {
+  color: #ff6b6b;
+}
+
+.lobby-stats {
+  background: #262421;
+  border-radius: 8px;
+  padding: 24px;
+  width: 100%;
+}
+
+.lobby-stats h3 {
+  font-size: 1rem;
+  margin-bottom: 16px;
+  color: #999;
+  text-align: center;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #777;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.rating-pools-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.rating-pool-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 8px;
+  background: #1e1c1a;
+  border-radius: 6px;
+}
+
+.rating-pool-stat .stat-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #629924;
+}
+
+.rating-pool-stat .stat-label {
+  font-size: 11px;
+}
+
+.rating-pool-stat .stat-sub {
+  font-size: 11px;
+  color: #666;
+}
+
+.lobby-no-ratings {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #777;
+  font-size: 13px;
+  padding: 8px 0;
+}

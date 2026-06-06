@@ -92,3 +92,13 @@ coverage.xml
 *.json
 !package.json
 !package-lock.json
+./backend/.env
+./backend/venv/*
+./frontend/.env
+./frontend/node_modules/*
+./venv/*
+./postgres_data/*
+./redis_data/*
+./docker-compose.yml
+./docker-compose.override.yml
+./docker-compose.override.yml

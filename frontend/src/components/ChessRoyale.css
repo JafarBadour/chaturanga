@@ -1,0 +1,135 @@
+.royale-container {
+  background: linear-gradient(180deg, #2a2418 0%, #1a1816 100%);
+  border: 2px solid #5c4a1f;
+  border-radius: 8px;
+  padding: 16px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.royale-tier {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.royale-tier-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #d4a843;
+  text-align: left;
+}
+
+.royale-tier-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.royale-button {
+  background: linear-gradient(180deg, #3d3528 0%, #2a2418 100%);
+  border: 1px solid #5c4a1f;
+  border-radius: 6px;
+  color: #f0e6c8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 8px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s, opacity 0.2s;
+  font-family: inherit;
+  min-height: 64px;
+}
+
+.royale-button:hover {
+  background: linear-gradient(180deg, #4a4030 0%, #353020 100%);
+  border-color: #d4a843;
+  transform: translateY(-1px);
+}
+
+.royale-button.dimmed {
+  opacity: 0.5;
+}
+
+.royale-button.dimmed:hover {
+  opacity: 0.85;
+}
+
+.royale-button.seeking {
+  background: linear-gradient(180deg, #4a3a15 0%, #3a2e10 100%);
+  border-color: #d4a843;
+  box-shadow: 0 0 12px rgba(212, 168, 67, 0.25);
+  color: #fff;
+}
+
+.royale-button.seeking:hover {
+  border-color: #e6912c;
+}
+
+.royale-button .seek-spinner {
+  width: 26px;
+  height: 26px;
+  border: 3px solid rgba(212, 168, 67, 0.2);
+  border-top-color: #d4a843;
+  border-radius: 50%;
+  animation: seek-spin 0.75s linear infinite;
+}
+
+.royale-button .seek-cancel-label {
+  font-size: 0.65rem;
+  margin-top: 6px;
+  color: #a89878;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.royale-button.seeking:hover .seek-cancel-label {
+  color: #e6912c;
+}
+
+@keyframes seek-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.royale-time {
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.royale-unit {
+  font-size: 0.6rem;
+  opacity: 0.6;
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.lobby-panel.royale-panel {
+  border: 1px solid #5c4a1f;
+  background: linear-gradient(180deg, #2a2620 0%, #262421 100%);
+}
+
+.lobby-panel.royale-panel h2 {
+  color: #d4a843;
+}
+
+.lobby-panel.royale-panel .lobby-desc {
+  color: #a89878;
+}
+
+.lobby-panels-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}

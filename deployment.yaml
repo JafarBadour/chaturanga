@@ -1,0 +1,9 @@
+providers:
+  - name: my-qwen
+    type: openai-compatible
+    base_url: "http://localhost:8000/v1"
+    api_key: "none"   # or whatever your server expects
+    models:
+      - id: qwen-7b-instruct
+        max_tokens: 4096
+        temperature: 0.7

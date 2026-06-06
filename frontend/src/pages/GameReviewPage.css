@@ -1,0 +1,164 @@
+.review-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.review-header {
+  margin-bottom: 16px;
+}
+
+.review-header h1 {
+  margin: 0 0 6px;
+  font-size: 1.4rem;
+}
+
+.review-meta {
+  color: #888;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.review-meta strong {
+  color: #ccc;
+}
+
+.review-layout {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.review-board-col {
+  flex: 0 0 auto;
+}
+
+.review-sidebar {
+  flex: 1;
+  min-width: 260px;
+}
+
+.review-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.review-controls button {
+  min-width: 44px;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 6px;
+  border: 1px solid #403d39;
+  background: #262421;
+  color: #ddd;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.review-controls button:hover:not(:disabled) {
+  background: #403d39;
+}
+
+.review-controls button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.review-controls .play-btn {
+  min-width: 72px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #3d4a2a;
+  border-color: #629924;
+  color: #d4e4bc;
+}
+
+.review-controls .play-btn.playing {
+  background: #4a3820;
+  border-color: #d4a843;
+  color: #f0d890;
+}
+
+.review-ply-label {
+  min-width: 64px;
+  text-align: center;
+  color: #999;
+  font-size: 13px;
+}
+
+.review-moves {
+  background: #262421;
+  border-radius: 8px;
+  padding: 14px;
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+.review-moves h4 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: #777;
+  text-transform: uppercase;
+}
+
+.review-move-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  font-size: 14px;
+  font-family: ui-monospace, monospace;
+}
+
+.review-move-token {
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 3px;
+  color: #bbb;
+}
+
+.review-move-token:hover {
+  background: #403d39;
+}
+
+.review-move-token.active {
+  background: #629924;
+  color: #fff;
+}
+
+.review-move-num {
+  color: #666;
+  margin-right: 4px;
+}
+
+.review-result {
+  margin-top: 12px;
+  padding: 12px;
+  background: #262421;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #aaa;
+}
+
+.review-back {
+  display: inline-block;
+  margin-bottom: 12px;
+  color: #81b64c;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.review-back:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 800px) {
+  .review-layout {
+    flex-direction: column;
+    align-items: center;
+  }
+}

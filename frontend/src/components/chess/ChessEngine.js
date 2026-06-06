@@ -601,7 +601,11 @@ export class ChessEngine {
     }
 
     // Move the king / piece
-    this.board[toRow][toCol] = piece;
+    let placedPiece = piece;
+    if (piece.toLowerCase() === "p" && (toRow === 0 || toRow === 7)) {
+      placedPiece = this.turn === "w" ? "Q" : "q";
+    }
+    this.board[toRow][toCol] = placedPiece;
     this.board[fromRow][fromCol] = null;
 
     // En passant target calculation

@@ -1,0 +1,351 @@
+.competitions-page {
+  flex: 1;
+  padding: 32px;
+  background: #161512;
+  min-height: 100vh;
+  color: #fff;
+  max-width: 1100px;
+}
+
+.competitions-page h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.competitions-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.competitions-top .competitions-desc {
+  margin-bottom: 0;
+}
+
+.competitions-create-btn {
+  position: relative;
+  flex-shrink: 0;
+  width: 96px;
+  height: 96px;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: linear-gradient(
+    135deg,
+    #629924 0%,
+    #81b64c 18%,
+    #4ecdc4 36%,
+    #d4a843 54%,
+    #9b59b6 72%,
+    #629924 100%
+  );
+  background-size: 400% 400%;
+  animation: create-btn-gradient 14s ease infinite;
+  box-shadow:
+    0 0 32px rgba(98, 153, 36, 0.45),
+    0 8px 24px rgba(0, 0, 0, 0.35);
+  transition: transform 0.25s ease;
+}
+
+.competitions-create-btn:hover {
+  transform: scale(1.06);
+}
+
+.competitions-create-btn:active {
+  transform: scale(0.97);
+}
+
+.competitions-create-btn-glow {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    #629924,
+    #81b64c,
+    #4ecdc4,
+    #d4a843,
+    #9b59b6,
+    #629924
+  );
+  opacity: 0.55;
+  filter: blur(14px);
+  animation: create-btn-spin 18s linear infinite;
+  z-index: -1;
+}
+
+.competitions-create-btn-ring {
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  padding: 3px;
+  background: conic-gradient(
+    from 0deg,
+    #629924,
+    #4ecdc4,
+    #d4a843,
+    #9b59b6,
+    #81b64c,
+    #629924
+  );
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+  animation: create-btn-spin 22s linear infinite reverse;
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.competitions-create-btn svg {
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
+}
+
+@keyframes create-btn-gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes create-btn-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.competitions-desc {
+  color: #999;
+}
+
+.competitions-dock {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.competitions-dock .dock-btn {
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 1px solid #403d39;
+  background: #1f1d1b;
+  color: #bbb;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+}
+
+.competitions-dock .dock-btn:hover {
+  background: #403d39;
+  color: #fff;
+}
+
+.competitions-dock .dock-btn.active {
+  background: #3d4a2a;
+  border-color: #629924;
+  color: #d4e4bc;
+}
+
+.competitions-table {
+  background: #262421;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.competitions-header-row,
+.competitions-row {
+  display: grid;
+  grid-template-columns: 1.2fr 0.9fr 72px 88px 1.3fr 1.4fr;
+  padding: 12px 20px;
+  align-items: center;
+  font-size: 14px;
+  gap: 8px;
+}
+
+.competitions-header-row {
+  background: #1a1816;
+  color: #777;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.competitions-row {
+  border-top: 1px solid #302e2b;
+}
+
+.competitions-row-clickable {
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.competitions-row-clickable:hover {
+  background: #2f2c28;
+}
+
+.competitions-row-joined {
+  background: #2a3320;
+  box-shadow: inset 3px 0 0 #629924;
+}
+
+.competitions-row-joined:hover {
+  background: #314028;
+}
+
+.comp-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.comp-joined-pill {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #3d4a2a;
+  border: 1px solid #629924;
+  color: #d4e4bc;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.comp-name {
+  font-weight: 600;
+  min-width: 0;
+}
+
+.comp-creator {
+  color: #ccc;
+}
+
+.comp-mode {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.comp-mode-standard {
+  color: #629924;
+}
+
+.comp-mode-royale {
+  color: #d4a843;
+}
+
+.comp-format {
+  color: #bbb;
+  font-weight: 600;
+}
+
+.comp-schedule {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+  color: #bbb;
+  line-height: 1.35;
+}
+
+.comp-schedule-countdown {
+  color: #81b64c;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.comp-notes {
+  color: #999;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.competitions-empty {
+  color: #777;
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.competitions-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+  gap: 12px;
+}
+
+.competitions-pagination button {
+  padding: 8px 14px;
+  border-radius: 4px;
+  border: 1px solid #403d39;
+  background: transparent;
+  color: #bbb;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.competitions-pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.competitions-pagination span {
+  color: #777;
+  font-size: 13px;
+}
+
+@media (max-width: 860px) {
+  .competitions-top {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .competitions-create-btn {
+    width: 88px;
+    height: 88px;
+  }
+
+  .competitions-create-btn svg {
+    width: 40px;
+    height: 40px;
+  }
+
+  .competitions-header-row,
+  .competitions-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 12px;
+  }
+
+  .competitions-header-row span:nth-child(n + 3),
+  .competitions-row span:nth-child(n + 3) {
+    grid-column: span 1;
+  }
+
+  .comp-name {
+    grid-column: 1 / -1;
+  }
+}
