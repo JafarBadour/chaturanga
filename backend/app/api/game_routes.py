@@ -9,6 +9,7 @@ from app.core.deps import get_current_user
 from app.db.database import get_db
 from app.db.models import User
 from app.models.game import (
+    ActiveGameSummary,
     ChallengeAcceptResponse,
     ChallengeCreateRequest,
     ChallengeCreatedResponse,
@@ -71,6 +72,14 @@ async def accept_challenge(
     current_user: User = Depends(get_current_user),
 ):
     return await challenge_service.accept_challenge(db, token, current_user)
+
+
+@router.get("/active", response_model=list[ActiveGameSummary])
+def list_active_games(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return game_play_service.get_active_games(db, current_user.id)
 
 
 @router.get("/history", response_model=GameHistoryPage)

@@ -16,10 +16,12 @@ from app.utils.time_control import parse_time_control_config
 
 logger = logging.getLogger(__name__)
 
-# Rating window: 100 pts immediately, +10/sec, cap 400 (Lichess-style widening)
+# Rating window: starts at 100 pts, widens by 10 pts/sec up to 400.
+# After PATIENCE_SEC seconds of waiting, just match the closest available player.
 MIN_RATING_DIFF = 100
 MAX_RATING_DIFF = 400
 RATING_EXPAND_PER_SECOND = 10
+PATIENCE_SEC = 10        # seconds before giving up on the window and just matching closest
 SEEK_STALE_MS = 30 * 60 * 1000
 QUEUE_KEY = "seek:queue:{time_control}"
 USER_KEY = "seek:user:{user_id}"
@@ -121,12 +123,12 @@ class MatchmakingService:
         now_ms: int,
     ) -> Optional[QueueEntry]:
         queue_key = QUEUE_KEY.format(time_control=time_control)
-        candidates = await redis.zrangebyscore(
-            queue_key, rating - MAX_RATING_DIFF, rating + MAX_RATING_DIFF
-        )
+        # Fetch all members — we need to consider everyone once patience kicks in
+        candidates = await redis.zrange(queue_key, 0, -1)
 
         self_joined = await redis.hget(USER_KEY.format(user_id=user_id), "joined_at")
         joined_at_ms = int(self_joined or now_ms)
+        my_wait_sec = (now_ms - joined_at_ms) / 1000
 
         best: Optional[QueueEntry] = None
         best_diff = float("inf")
@@ -144,15 +146,24 @@ class MatchmakingService:
                 await self._remove_from_queue(redis, candidate_id, time_control)
                 continue
 
-            max_wait_sec = max(now_ms - joined_at_ms, now_ms - entry.joined_at_ms) / 1000
-            allowed_diff = min(
-                MAX_RATING_DIFF,
-                max(MIN_RATING_DIFF, int(max_wait_sec * RATING_EXPAND_PER_SECOND)),
-            )
             diff = abs(entry.rating - rating)
-            if diff <= allowed_diff and diff < best_diff:
-                best_diff = diff
-                best = entry
+            their_wait_sec = (now_ms - entry.joined_at_ms) / 1000
+            max_wait_sec = max(my_wait_sec, their_wait_sec)
+
+            # After PATIENCE_SEC both players have been waiting long enough:
+            # just pick the closest opponent with no rating cap.
+            if max_wait_sec >= PATIENCE_SEC:
+                if diff < best_diff:
+                    best_diff = diff
+                    best = entry
+            else:
+                allowed_diff = min(
+                    MAX_RATING_DIFF,
+                    max(MIN_RATING_DIFF, int(max_wait_sec * RATING_EXPAND_PER_SECOND)),
+                )
+                if diff <= allowed_diff and diff < best_diff:
+                    best_diff = diff
+                    best = entry
 
         return best
 
@@ -239,3 +250,80 @@ class MatchmakingService:
 
 
 matchmaking_service = MatchmakingService()
+
+
+async def run_matchmaking_loop(interval_seconds: float = 2.0) -> None:
+    """Background loop that retries matching for players already in the queue.
+
+    Runs every `interval_seconds`. Once both players have waited PATIENCE_SEC,
+    they are matched with the closest available opponent regardless of rating gap.
+    """
+    import asyncio
+
+    logger.info("Matchmaking background loop started (interval=%.1fs)", interval_seconds)
+    while True:
+        try:
+            await asyncio.sleep(interval_seconds)
+            await _retry_pending_matches()
+        except asyncio.CancelledError:
+            break
+        except Exception:
+            logger.exception("Matchmaking loop iteration failed")
+    logger.info("Matchmaking background loop stopped")
+
+
+async def _retry_pending_matches() -> None:
+    """Scan all active seek queues and try to match waiting players."""
+    redis = await get_redis()
+    now_ms = int(time.time() * 1000)
+
+    # Find all active time-control queues
+    queue_keys = await redis.keys(QUEUE_KEY.format(time_control="*"))
+    if not queue_keys:
+        return
+
+    from app.db.database import SessionLocal
+
+    for queue_key in queue_keys:
+        time_control = queue_key[len("seek:queue:"):]
+        members = await redis.zrange(queue_key, 0, -1)
+        if len(members) < 2:
+            continue
+
+        async with redis.lock(LOCK_KEY.format(time_control=time_control), timeout=5):
+            # Re-fetch under lock to avoid races
+            members = await redis.zrange(queue_key, 0, -1)
+            if len(members) < 2:
+                continue
+
+            for user_id in list(members):
+                # Check if this player is still seeking this time control
+                entry = await matchmaking_service._load_entry(redis, user_id, time_control)
+                if not entry:
+                    await redis.zrem(queue_key, user_id)
+                    continue
+
+                opponent = await matchmaking_service._find_opponent(
+                    redis, time_control, user_id, entry.rating, now_ms
+                )
+                if not opponent:
+                    continue
+
+                # Match found — remove both and create game
+                await matchmaking_service._remove_pair(
+                    redis, user_id, opponent.user_id, time_control
+                )
+                db = SessionLocal()
+                try:
+                    game = matchmaking_service._create_game(db, entry, opponent, time_control)
+                    await publish_casual_match([user_id, opponent.user_id], game.id)
+                    logger.info(
+                        "Background matched game %s: %s vs %s (%s)",
+                        game.id,
+                        entry.username,
+                        opponent.username,
+                        time_control,
+                    )
+                finally:
+                    db.close()
+                break  # Only one match per queue per loop tick

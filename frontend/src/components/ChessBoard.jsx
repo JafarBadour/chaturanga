@@ -6,7 +6,7 @@ import { ArrowParser } from './ArrowParser';
 import { ChessStateParser } from './ChessStateParser';
 import './ChessBoard.css';
 
-const ChessBoard = ({ 
+const ChessBoard = ({
   fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
   orientation = "white",
   showCoordinates = true,
@@ -20,13 +20,16 @@ const ChessBoard = ({
   serverControlled = false,
   inCheck = false,
   checkedColor = null,
-  arrows = "", // "e5->e6\e5->b4"
-  arrowThickness = 24, // Default arrow thickness
-  showPossibleMovesSide = "both", // "white", "black", or "both"
-  turn = "white", // "white" or "black" - whose turn it is
-  stateString = null // "turn::fen::arrows" format - overrides other props
+  arrows = "",
+  arrowThickness = 24,
+  showPossibleMovesSide = "both",
+  turn = "white",
+  stateString = null,
+  // Premove props
+  enablePremoves = false,
+  premoves = [],
+  onPremove = null,
 }) => {
-  // Parse stateString if provided, otherwise use individual props
   const parsedState = stateString ? ChessStateParser.parse(stateString) : null;
   const effectiveTurn = parsedState ? parsedState.turn : turn;
   const effectiveFen = parsedState ? parsedState.fen : fen;
@@ -39,145 +42,176 @@ const ChessBoard = ({
   const [engine, setEngine] = useState(new ChessEngine(effectiveFen));
   const [gameState, setGameState] = useState(null);
   const [parsedArrows, setParsedArrows] = useState([]);
+  const [pendingPromotion, setPendingPromotion] = useState(null);
+  const [premoveSelected, setPremoveSelected] = useState(null);
+  const [premoveMoves, setPremoveMoves] = useState([]);
 
-  // Parse FEN string into board array
   const parseFEN = (fenString) => {
     const parts = fenString.split(' ');
-    const piecePlacement = parts[0];
-    const ranks = piecePlacement.split('/');
-    
-    const boardArray = [];
-    
-    ranks.forEach(rank => {
-      const rankArray = [];
-      for (let char of rank) {
-        if (isNaN(char)) {
-          // It's a piece
-          rankArray.push(char);
+    const ranks = parts[0].split('/');
+    return ranks.map(rank => {
+      const row = [];
+      for (let ch of rank) {
+        if (isNaN(ch)) {
+          row.push(ch);
         } else {
-          // It's a number (empty squares)
-          for (let i = 0; i < parseInt(char); i++) {
-            rankArray.push(null);
-          }
+          for (let i = 0; i < parseInt(ch); i++) row.push(null);
         }
       }
-      boardArray.push(rankArray);
+      return row;
     });
-    
-    return boardArray;
   };
 
-  // Get square color (light/dark)
-  const getSquareColor = (row, col) => {
-    return (row + col) % 2 === 0 ? 'light' : 'dark';
+  const getSquareColor = (row, col) => (row + col) % 2 === 0 ? 'light' : 'dark';
+
+  const getSquareNotation = (row, col) => String.fromCharCode(97 + col) + (8 - row);
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+
+  const isPawnPromotion = (from, to) => {
+    const piece = engine.getPieceAt(from);
+    if (!piece) return false;
+    return (piece === 'P' && to[1] === '8') || (piece === 'p' && to[1] === '1');
   };
 
-  // Convert row/col to square notation (e.g., "e4")
-  const getSquareNotation = (row, col) => {
-    const file = String.fromCharCode(97 + col); // a-h
-    const rank = 8 - row; // 1-8
-    return file + rank;
+  const getPremoveMoves = (square) => {
+    try {
+      const fenParts = engine.getFEN().split(' ');
+      fenParts[1] = orientation === "white" ? "w" : "b";
+      const tempEngine = new ChessEngine(fenParts.join(' '));
+      return tempEngine.getLegalMoves(square) || [];
+    } catch {
+      return [];
+    }
   };
 
-  // Handle square click
+  const cancelPromotion = () => {
+    const revertEngine = new ChessEngine(effectiveFen);
+    setEngine(revertEngine);
+    setBoard(parseFEN(effectiveFen));
+    setGameLastMove(null);
+    setGameState(revertEngine.getGameState());
+    setPendingPromotion(null);
+  };
+
+  // ── Square click ──────────────────────────────────────────────────────────
+
   const handleSquareClick = (row, col) => {
     const square = getSquareNotation(row, col);
-    console.log('=== SQUARE CLICKED ===');
-    console.log('Square:', square, 'EnableMoves:', enableMoves);
-    
-    if (enableMoves) {
-      // Use chess game logic
+
+    // Dismiss promotion picker on board click
+    if (pendingPromotion) {
+      cancelPromotion();
+      return;
+    }
+
+    // Premove mode — opponent's turn
+    if (enablePremoves && !enableMoves) {
       const piece = engine.getPieceAt(square);
-      console.log('Piece at square:', piece);
-      console.log('Engine exists:', !!engine);
-      
-      // If a piece is selected and we click on a possible move square
+      // Use orientation (player's color) to identify own pieces, not showPossibleMovesSide
+      // which is "both" when the board is non-interactive
+      const isOwnPiece = piece && (
+        (orientation === "white" && piece === piece.toUpperCase()) ||
+        (orientation === "black" && piece !== piece.toUpperCase())
+      );
+
+      if (premoveSelected) {
+        if (square === premoveSelected) {
+          setPremoveSelected(null);
+          setPremoveMoves([]);
+        } else if (isOwnPiece) {
+          setPremoveSelected(square);
+          setPremoveMoves(getPremoveMoves(square));
+        } else {
+          if (onPremove) onPremove({ from: premoveSelected, to: square });
+          setPremoveSelected(null);
+          setPremoveMoves([]);
+        }
+      } else if (isOwnPiece) {
+        setPremoveSelected(square);
+        setPremoveMoves(getPremoveMoves(square));
+      }
+      return;
+    }
+
+    if (enableMoves) {
+      const piece = engine.getPieceAt(square);
+
+      // Completing a move
       if (selectedSquare && possibleMoves.includes(square)) {
         if (serverControlled) {
           const from = selectedSquare;
           setSelectedSquare(null);
           setPossibleMoves([]);
+
+          if (isPawnPromotion(from, square)) {
+            // Show optimistic queen, then wait for picker
+            const moveResult = engine.makeMove(from, square);
+            if (moveResult?.fen) {
+              const prev = new ChessEngine(moveResult.fen);
+              setEngine(prev);
+              setBoard(parseFEN(moveResult.fen));
+              setGameLastMove({ from, to: square });
+              setGameState(prev.getGameState());
+            }
+            setPendingPromotion({ from, to: square });
+            return;
+          }
+
           const moveResult = engine.makeMove(from, square);
           if (moveResult?.fen) {
-            const previewEngine = new ChessEngine(moveResult.fen);
-            setEngine(previewEngine);
+            const prev = new ChessEngine(moveResult.fen);
+            setEngine(prev);
             setBoard(parseFEN(moveResult.fen));
             setGameLastMove({ from, to: square });
-            setGameState(previewEngine.getGameState());
+            setGameState(prev.getGameState());
           }
-          if (onMove) {
-            onMove({ from, to: square });
-          }
+          if (onMove) onMove({ from, to: square });
           return;
         }
 
-        // Make the move locally (offline / analysis mode)
-        const moveResult = engine.makeMove(selectedSquare, square);
+        // Offline / analysis mode
+        engine.makeMove(selectedSquare, square);
         setGameLastMove({ from: selectedSquare, to: square });
-        
-        // Clear selection
         setSelectedSquare(null);
         setPossibleMoves([]);
-        
-        // Update engine state
         setEngine(new ChessEngine(engine.getFEN()));
-        
-        // Update game state
-        const newGameState = engine.getGameState();
-        setGameState(newGameState);
-        
-        // Notify parent component
-        if (onMove) {
-          onMove({ ...moveResult, gameState: newGameState });
-        }
+        const ngs = engine.getGameState();
+        setGameState(ngs);
+        if (onMove) onMove({ gameState: ngs });
         return;
       }
-      
-      // If clicking on piece, check if we should show moves for this side
+
+      // Select a piece
       if (piece) {
         const pieceColor = piece === piece.toUpperCase() ? 'w' : 'b';
-        const currentTurn = effectiveTurn === 'white' ? 'w' : 'b';
-        console.log('Clicked piece:', piece, 'pieceColor:', pieceColor, 'currentTurn:', currentTurn, 'showPossibleMovesSide:', showPossibleMovesSide);
-        console.log('Engine turn:', engine.getTurn(), 'External turn:', currentTurn);
-        
-        // Check if we should show moves for this piece's color
-        const shouldShowMoves = showPossibleMovesSide === "both" || 
-                               (showPossibleMovesSide === "white" && pieceColor === 'w') ||
-                               (showPossibleMovesSide === "black" && pieceColor === 'b');
-        
-        console.log('Should show moves:', shouldShowMoves);
-        
-        if (shouldShowMoves) {
-          console.log('Selecting piece and showing moves:', square);
+        const shouldShow =
+          showPossibleMovesSide === "both" ||
+          (showPossibleMovesSide === "white" && pieceColor === 'w') ||
+          (showPossibleMovesSide === "black" && pieceColor === 'b');
+
+        if (shouldShow) {
           setSelectedSquare(square);
           try {
-            const moves = engine.getLegalMoves(square);
-            console.log('Legal moves found:', moves);
-            console.log('Moves length:', moves ? moves.length : 'null');
-            setPossibleMoves(moves || []);
-          } catch (error) {
-            console.error('Error getting legal moves:', error);
+            setPossibleMoves(engine.getLegalMoves(square) || []);
+          } catch {
             setPossibleMoves([]);
           }
           return;
         }
       }
-      
-      // Clear selection if clicking on empty square or opponent piece
-      console.log('Clearing selection - clicked on:', square, 'piece:', piece);
+
       setSelectedSquare(null);
       setPossibleMoves([]);
     } else {
-      // Use simple selection logic
       setSelectedSquare(selectedSquare === square ? null : square);
     }
-    
-    if (onSquareClick) {
-      onSquareClick(square, row, col);
-    }
+
+    if (onSquareClick) onSquareClick(square, row, col);
   };
 
-  // Get square classes for styling
+  // ── Square classes ────────────────────────────────────────────────────────
+
   const getSquareClasses = (row, col) => {
     const square = getSquareNotation(row, col);
     const color = getSquareColor(row, col);
@@ -196,57 +230,42 @@ const ChessBoard = ({
         }
       }
     }
-    
-    // Use chess game highlighting if moves are enabled
+
     if (enableMoves) {
-      // Check if square is selected
-      if (selectedSquare === square) {
-        classes += ' selected';
-      }
-      
-      // Check if square is a possible move
+      if (selectedSquare === square) classes += ' selected';
       if (possibleMoves.includes(square)) {
-        const piece = engine.getPieceAt(square);
-        if (piece) {
-          classes += ' capture';
-        } else {
-          classes += ' possible-move';
-        }
+        classes += engine.getPieceAt(square) ? ' capture' : ' possible-move';
       }
-      
-      // Check if square is part of last move
-      if (!serverControlled) {
-        if (gameLastMove && (gameLastMove.from === square || gameLastMove.to === square)) {
-          classes += ' last-move';
-        }
+      if (!serverControlled && gameLastMove) {
+        if (gameLastMove.from === square || gameLastMove.to === square) classes += ' last-move';
       }
-      
-      // Check if king is in check (offline mode)
-      if (!serverControlled && gameState && gameState.inCheck) {
+      if (!serverControlled && gameState?.inCheck) {
         const piece = engine.getPieceAt(square);
         if (piece && piece.toLowerCase() === 'k' && engine.getPieceColor(piece) === engine.getTurn()) {
           classes += ' in-check';
         }
       }
-    } else {
-      // Use simple highlighting
-      if (selectedSquare === square) {
-        classes += ' selected';
-      }
-      
-      if (highlightedSquares.includes(square)) {
-        classes += ' highlighted';
-      }
-      
-      if (lastMove && (lastMove.from === square || lastMove.to === square)) {
-        classes += ' last-move';
+    } else if (!serverControlled) {
+      if (selectedSquare === square) classes += ' selected';
+      if (highlightedSquares.includes(square)) classes += ' highlighted';
+      if (lastMove && (lastMove.from === square || lastMove.to === square)) classes += ' last-move';
+    }
+
+    // Premove highlights
+    if (premoves?.length > 0) {
+      for (const pm of premoves) {
+        if (pm.from === square) classes += ' premove-from';
+        if (pm.to === square) classes += ' premove-to';
       }
     }
-    
+    if (premoveSelected === square) classes += ' premove-selected';
+    if (premoveMoves.includes(square)) classes += ' premove-possible';
+
     return classes;
   };
 
-  // Update engine when FEN changes
+  // ── Effects ───────────────────────────────────────────────────────────────
+
   useEffect(() => {
     if (enableMoves || serverControlled) {
       const newEngine = new ChessEngine(effectiveFen);
@@ -255,60 +274,64 @@ const ChessBoard = ({
       setPossibleMoves([]);
       setGameLastMove(null);
       setGameState(newEngine.getGameState());
+      setPremoveSelected(null);
+      setPremoveMoves([]);
+      setPendingPromotion(null);
     }
   }, [effectiveFen, enableMoves, serverControlled]);
 
-  // Sync engine turn with external turn parameter (offline mode only)
   useEffect(() => {
     if (!enableMoves || !engine || serverControlled) return;
-      const engineTurn = engine.getTurn();
-      const externalTurn = effectiveTurn === 'white' ? 'w' : 'b';
-      console.log('Syncing turns - Engine:', engineTurn, 'External:', externalTurn);
-      
-      if (engineTurn !== externalTurn) {
-        console.log('Turn mismatch detected, updating engine');
-        // Create new engine with updated turn
-        const newFen = engine.getFEN().replace(/ [wb] /, ` ${externalTurn} `);
-        const newEngine = new ChessEngine(newFen);
-        setEngine(newEngine);
-        setGameState(newEngine.getGameState());
-      }
+    const engineTurn = engine.getTurn();
+    const externalTurn = effectiveTurn === 'white' ? 'w' : 'b';
+    if (engineTurn !== externalTurn) {
+      const newFen = engine.getFEN().replace(/ [wb] /, ` ${externalTurn} `);
+      setEngine(new ChessEngine(newFen));
+      setGameState(new ChessEngine(newFen).getGameState());
+    }
   }, [effectiveTurn, enableMoves, engine, serverControlled]);
 
-  // Parse arrows when arrows prop changes
   useEffect(() => {
-    const parsed = ArrowParser.parse(effectiveArrows);
-    setParsedArrows(parsed);
+    setParsedArrows(ArrowParser.parse(effectiveArrows));
   }, [effectiveArrows]);
 
-  // Initialize board from FEN
   useEffect(() => {
     if (enableMoves || serverControlled) {
-      // Use chess engine board
       setBoard(parseFEN(engine.getFEN()));
     } else {
-      // Use provided FEN
-      const boardArray = parseFEN(effectiveFen);
-      setBoard(boardArray);
+      setBoard(parseFEN(effectiveFen));
     }
   }, [effectiveFen, enableMoves, serverControlled, engine]);
 
-  // Flip board if orientation is black
-  const displayBoard = orientation === "black" ? 
-    board.map(row => [...row].reverse()).reverse() : 
-    board;
+  // ── Render ────────────────────────────────────────────────────────────────
+
+  const displayBoard = orientation === "black"
+    ? board.map(row => [...row].reverse()).reverse()
+    : board;
 
   const squareSize = size / 8;
 
+  // Promotion picker geometry
+  let promoLeft = 0, promoTop = 0, promoPieces = [], promoGoesDown = true;
+  if (pendingPromotion) {
+    const toFile = pendingPromotion.to.charCodeAt(0) - 97;
+    const isWhitePromo = pendingPromotion.to[1] === '8';
+    const displayCol = orientation === "white" ? toFile : (7 - toFile);
+    const promoDisplayRow = orientation === "white"
+      ? (isWhitePromo ? 0 : 7)
+      : (isWhitePromo ? 7 : 0);
+    promoGoesDown = promoDisplayRow === 0;
+    promoLeft = displayCol * squareSize;
+    promoTop = promoGoesDown ? 0 : 4 * squareSize;
+    const basePieces = isWhitePromo ? ['Q', 'R', 'B', 'N'] : ['q', 'r', 'b', 'n'];
+    promoPieces = promoGoesDown ? basePieces : [...basePieces].reverse();
+  }
+
   return (
     <div className="chessboard-container">
-      <div 
+      <div
         className="chessboard"
-        style={{ 
-          width: size, 
-          height: size,
-          fontSize: `${squareSize * 0.6}px`
-        }}
+        style={{ width: size, height: size, fontSize: `${squareSize * 0.6}px` }}
       >
         {displayBoard.map((rank, row) => (
           <div key={row} className="rank">
@@ -316,16 +339,12 @@ const ChessBoard = ({
               const actualRow = orientation === "black" ? 7 - row : row;
               const actualCol = orientation === "black" ? 7 - col : col;
               const square = getSquareNotation(actualRow, actualCol);
-              
+
               return (
                 <div
                   key={col}
                   className={getSquareClasses(actualRow, actualCol)}
-                  style={{ 
-                    width: squareSize, 
-                    height: squareSize,
-                    fontSize: `${squareSize * 0.6}px`
-                  }}
+                  style={{ width: squareSize, height: squareSize, fontSize: `${squareSize * 0.6}px` }}
                   onClick={() => handleSquareClick(actualRow, actualCol)}
                 >
                   {piece && (
@@ -337,17 +356,13 @@ const ChessBoard = ({
                       isSelected={selectedSquare === square}
                     />
                   )}
-                  
-                  {/* Square coordinates */}
                   {showCoordinates && (
                     <>
-                      {/* File labels (a-h) */}
                       {row === 7 && (
                         <span className="coordinate file-coordinate">
                           {String.fromCharCode(97 + actualCol)}
                         </span>
                       )}
-                      {/* Rank labels (1-8) */}
                       {col === 0 && (
                         <span className="coordinate rank-coordinate">
                           {8 - actualRow}
@@ -360,20 +375,38 @@ const ChessBoard = ({
             })}
           </div>
         ))}
-        
+
+        {/* Promotion picker */}
+        {pendingPromotion && (
+          <div className="promotion-overlay" onClick={cancelPromotion}>
+            <div
+              className="promotion-picker"
+              style={{ left: promoLeft, top: promoTop, width: squareSize }}
+              onClick={e => e.stopPropagation()}
+            >
+              {promoPieces.map(p => (
+                <div
+                  key={p}
+                  className="promotion-option"
+                  style={{ width: squareSize, height: squareSize }}
+                  onClick={() => {
+                    const { from, to } = pendingPromotion;
+                    setPendingPromotion(null);
+                    if (onMove) onMove({ from, to, promotion: p.toLowerCase() });
+                  }}
+                >
+                  <Piece piece={p} size="78%" useImages={usePieceImages} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Arrow overlay */}
         {parsedArrows.length > 0 && (
           <svg
             className="arrow-overlay"
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              pointerEvents: 'none',
-              zIndex: 10
-            }}
+            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 10 }}
           >
             {parsedArrows.map((arrow, index) => (
               <Arrow

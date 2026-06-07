@@ -45,6 +45,7 @@ export default function GameSocialPanel({
   incomingMessage,
   chatError,
   onDismissChatError,
+  pingMs = null,
 }) {
   const [mute, setMute] = useState(() => readMute());
   const [messages, setMessages] = useState([]);
@@ -310,6 +311,10 @@ export default function GameSocialPanel({
           Send
         </button>
       </form>
+
+      <p className="chat-ping">
+        {pingMs !== null ? `${pingMs} ms` : "—"}
+      </p>
     </div>
   );
 }

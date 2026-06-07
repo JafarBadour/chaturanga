@@ -33,6 +33,34 @@ MAX_STRIKES = 2
 class GamePlayService:
     START_FEN = chess.STARTING_FEN
 
+    def get_active_games(self, db: Session, user_id: str):
+        from app.models.game import ActiveGameSummary
+        games = (
+            db.query(Game)
+            .filter(
+                Game.status == "active",
+                or_(Game.white_user_id == user_id, Game.black_user_id == user_id),
+            )
+            .order_by(Game.created_at.desc())
+            .limit(10)
+            .all()
+        )
+        result = []
+        for game in games:
+            is_white = game.white_user_id == user_id
+            opp_id = game.black_user_id if is_white else game.white_user_id
+            opp = db.query(User).filter(User.id == opp_id).one()
+            opp_rating = game.black_rating_before if is_white else game.white_rating_before
+            result.append(ActiveGameSummary(
+                game_id=game.id,
+                opponent_username=opp.username,
+                opponent_rating=opp_rating,
+                time_control=game.time_control,
+                game_mode=game.game_mode,
+                my_color="white" if is_white else "black",
+            ))
+        return result
+
     def get_game(self, db: Session, game_id: str) -> Game:
         game = db.query(Game).filter(Game.id == game_id).first()
         if not game:
@@ -52,6 +80,26 @@ class GamePlayService:
     def _active_color(self, game: Game) -> str:
         return self.get_position_state(game)["active_color"]
 
+    def _last_move_squares(self, game) -> tuple[Optional[str], Optional[str]]:
+        """Return (from_sq, to_sq) of the last move in UCI notation, or (None, None)."""
+        if not game.moves:
+            return None, None
+        board = chess.Board()
+        last_move = None
+        for san in game.moves.split():
+            if not san or san == "…":
+                continue
+            try:
+                move = board.parse_san(san)
+                last_move = move
+                board.push(move)
+            except Exception:
+                pass
+        if last_move is None:
+            return None, None
+        uci = last_move.uci()  # e.g. "e2e4" or "e7e8q"
+        return uci[:2], uci[2:4]
+
     def to_response(
         self,
         db: Session,
@@ -61,6 +109,7 @@ class GamePlayService:
         white = db.query(User).filter(User.id == game.white_user_id).one()
         black = db.query(User).filter(User.id == game.black_user_id).one()
         position = self.get_position_state(game)
+        last_move_from, last_move_to = self._last_move_squares(game)
         offer_model = None
         if draw_offer and draw_offer.get("user_id"):
             offer_model = DrawOfferInfo(
@@ -111,6 +160,8 @@ class GamePlayService:
             competition_id=game.competition_id,
             competition_format=competition_format,
             draw_offer=offer_model,
+            last_move_from=last_move_from,
+            last_move_to=last_move_to,
             **position,
         )
 

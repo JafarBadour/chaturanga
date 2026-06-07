@@ -92,13 +92,36 @@ async def publish_comp_refresh(
 
 async def _deliver_matched_to_users(data: dict[str, Any]) -> None:
     from app.services.ws_manager import ws_manager
+    from app.services.game_play_service import game_play_service
+    from app.db.database import SessionLocal
 
     game_id = data["game_id"]
     comp_id = data.get("competition_id")
-    for uid in data["users"]:
+    user_ids = data["users"]
+
+    # Build per-user active game summaries keyed by (uid, game_id).
+    # Using a flat game_id key caused both users to share the same
+    # summary (wrong my_color for one of them).
+    db = SessionLocal()
+    try:
+        per_user_summaries: dict[str, Any] = {}
+        for uid in user_ids:
+            for g in game_play_service.get_active_games(db, uid):
+                if g.game_id == game_id:
+                    per_user_summaries[uid] = g
+                    break
+    except Exception:
+        per_user_summaries = {}
+    finally:
+        db.close()
+
+    for uid in user_ids:
         msg: dict[str, Any] = {"type": "matched", "game_id": game_id}
         if comp_id:
             msg["competition_id"] = comp_id
+        summary = per_user_summaries.get(uid)
+        if summary:
+            msg["game_summary"] = summary.model_dump()
         await ws_manager.send_to_user(uid, msg)
 
 
@@ -145,6 +168,20 @@ async def run_realtime_listener() -> None:
                 elif channel.startswith("game:"):
                     game_id = channel.split(":", 1)[1]
                     await ws_manager.deliver_game_local(game_id, data)
+                    # Also fan-out game_over directly to each player who is NOT
+                    # already a game subscriber (i.e. not on the game page).
+                    # This ensures the active-games indicator clears even when
+                    # the user has navigated away, without double-delivering.
+                    if data.get("type") == "game_over":
+                        try:
+                            white_id = data["game"]["white_player"]["id"]
+                            black_id = data["game"]["black_player"]["id"]
+                            already_notified = ws_manager.game_subscribers.get(game_id, set())
+                            for uid in (white_id, black_id):
+                                if uid not in already_notified:
+                                    await ws_manager.send_to_user(uid, data)
+                        except (KeyError, TypeError):
+                            pass
                 elif channel.startswith("user:"):
                     user_id = channel.split(":", 1)[1]
                     await ws_manager.send_to_user(user_id, data)

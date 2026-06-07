@@ -323,3 +323,13 @@
 .emoji-pick-btn:active {
   transform: scale(0.92);
 }
+
+.chat-ping {
+  margin: 4px 0 0;
+  padding: 0 2px;
+  font-size: 0.68rem;
+  color: #6b6560;
+  letter-spacing: 0.02em;
+  text-align: right;
+  user-select: none;
+}

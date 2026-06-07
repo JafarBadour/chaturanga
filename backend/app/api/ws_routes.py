@@ -9,6 +9,22 @@ from app.services.ws_manager import ws_manager
 router = APIRouter(tags=["websocket"])
 
 
+async def _push_active_games(user_id: str) -> None:
+    """Push the user's current active games on connect/reconnect."""
+    from app.services.game_play_service import game_play_service
+    db = SessionLocal()
+    try:
+        games = game_play_service.get_active_games(db, user_id)
+        await ws_manager.send_to_user(user_id, {
+            "type": "active_games",
+            "games": [g.model_dump() for g in games],
+        })
+    except Exception:
+        pass
+    finally:
+        db.close()
+
+
 @router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket, token: str = ""):
     db = SessionLocal()
@@ -22,6 +38,7 @@ async def websocket_endpoint(websocket: WebSocket, token: str = ""):
         return
 
     await ws_manager.connect_user(user_id, websocket)
+    await _push_active_games(user_id)
     try:
         while True:
             data = await websocket.receive_json()

@@ -17,3 +17,126 @@
   align-items: center;
   gap: 8px;
 }
+
+/* ── Active games indicator in top bar ──────────────────────────── */
+@keyframes ag-tb-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(93, 187, 52, 0.7); }
+  50%       { box-shadow: 0 0 0 5px rgba(93, 187, 52, 0); }
+}
+
+.ag-wrap {
+  position: relative;
+}
+
+.ag-btn {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  background: rgba(98, 153, 36, 0.15);
+  border: 1px solid rgba(98, 153, 36, 0.35);
+  color: #88c057;
+  font-size: 13px;
+  font-weight: 600;
+  position: relative;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.ag-btn:hover {
+  background: rgba(98, 153, 36, 0.25);
+  border-color: rgba(98, 153, 36, 0.6);
+}
+
+.ag-btn.open {
+  background: rgba(98, 153, 36, 0.3);
+}
+
+.ag-count {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  min-width: 14px;
+  text-align: center;
+}
+
+.ag-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #5dbb34;
+  animation: ag-tb-pulse 1.8s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.ag-popover {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  width: 230px;
+  background: #1a1816;
+  border: 1px solid #3a3735;
+  border-radius: 10px;
+  padding: 10px 0 6px;
+  z-index: 300;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+}
+
+.ag-popover-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #777;
+  padding: 0 14px 6px;
+  margin: 0;
+  border-bottom: 1px solid #2e2c2a;
+}
+
+.ag-row {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 14px;
+  box-sizing: border-box;
+  transition: background 0.12s;
+}
+
+.ag-row:hover {
+  background: #262421;
+}
+
+.ag-row-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #5dbb34;
+  animation: ag-tb-pulse 1.8s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.ag-row-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow: hidden;
+}
+
+.ag-row-opponent {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e8e6e3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ag-row-meta {
+  font-size: 11px;
+  color: #888;
+}

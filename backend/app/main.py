@@ -20,9 +20,11 @@ from app.api.ws_routes import router as ws_router
 from app.db.redis_client import close_redis, init_redis
 from app.services.competition_manager_loop import run_competition_manager
 from app.services.realtime_events import run_realtime_listener
+from app.services.matchmaking_service import run_matchmaking_loop
 
 logger = logging.getLogger(__name__)
 _match_listener_task: asyncio.Task | None = None
+_matchmaking_loop_task: asyncio.Task | None = None
 _comp_manager_task: asyncio.Task | None = None
 
 
@@ -32,11 +34,12 @@ async def lifespan(app: FastAPI):
     print("♟️  Starting ChessStrikes...")
     print("=" * 40)
 
-    global _match_listener_task, _comp_manager_task
+    global _match_listener_task, _comp_manager_task, _matchmaking_loop_task
     try:
         await init_redis()
         print("✅ Redis connected (realtime pub/sub)")
         _match_listener_task = asyncio.create_task(run_realtime_listener())
+        _matchmaking_loop_task = asyncio.create_task(run_matchmaking_loop())
         _comp_manager_task = asyncio.create_task(run_competition_manager())
         print("✅ Competition manager started")
     except Exception as e:
@@ -50,6 +53,12 @@ async def lifespan(app: FastAPI):
         _match_listener_task.cancel()
         try:
             await _match_listener_task
+        except asyncio.CancelledError:
+            pass
+    if _matchmaking_loop_task:
+        _matchmaking_loop_task.cancel()
+        try:
+            await _matchmaking_loop_task
         except asyncio.CancelledError:
             pass
     if _comp_manager_task:

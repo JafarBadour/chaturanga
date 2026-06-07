@@ -128,6 +128,11 @@ class ConnectionManager:
 
     async def handle_message(self, user_id: str, data: dict[str, Any]) -> None:
         msg_type = data.get("type")
+
+        if msg_type == "ping":
+            await self.send_to_user(user_id, {"type": "pong", "t": data.get("t")})
+            return
+
         db = SessionLocal()
         try:
             if msg_type == "seek":

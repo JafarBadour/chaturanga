@@ -15,6 +15,58 @@ import {
 } from "../utils/gameClock";
 import "./GamePage.css";
 
+function RatingAnimation({ before, after }) {
+  const [displayed, setDisplayed] = useState(before);
+  const [showDelta, setShowDelta] = useState(false);
+  const rafRef = useRef(null);
+  const delta = after - before;
+
+  useEffect(() => {
+    setDisplayed(before);
+    setShowDelta(false);
+    if (before === after) {
+      // No change — just show the delta badge immediately
+      const t = setTimeout(() => setShowDelta(true), 600);
+      return () => clearTimeout(t);
+    }
+    const startDelay = setTimeout(() => {
+      const duration = 900;
+      const startTime = performance.now();
+      const tick = (now) => {
+        const progress = Math.min((now - startTime) / duration, 1);
+        // ease-out cubic
+        const eased = 1 - Math.pow(1 - progress, 3);
+        setDisplayed(Math.round(before + delta * eased));
+        if (progress < 1) {
+          rafRef.current = requestAnimationFrame(tick);
+        } else {
+          setShowDelta(true);
+        }
+      };
+      rafRef.current = requestAnimationFrame(tick);
+    }, 500);
+
+    return () => {
+      clearTimeout(startDelay);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [before, after]);
+
+  const sign = delta > 0 ? "+" : "";
+  const cls = delta > 0 ? "gain" : delta < 0 ? "loss" : "draw";
+
+  return (
+    <div className="rating-anim">
+      <span className="rating-anim-value">{displayed}</span>
+      {showDelta && (
+        <span className={`rating-anim-delta ${cls}`}>
+          {sign}{delta}
+        </span>
+      )}
+    </div>
+  );
+}
+
 function royaleLabel(timeControl) {
   const sec = timeControl.replace("royale/", "");
   return `Chess Royale · ${sec}s/move`;
@@ -83,6 +135,9 @@ export default function GamePage() {
   const pendingMoveRef = useRef(false);
   const lastTickBucketRef = useRef(null);
   const activeColorRef = useRef("white");
+  // Single premove: ref holds the queued move, state is only for board display
+  const premoveRef = useRef(null);
+  const [premove, setPremove] = useState(null);
 
   const applyClockState = useCallback((data) => {
     pendingMoveRef.current = false;
@@ -138,8 +193,12 @@ export default function GamePage() {
       } else if (data.type === "game_over") {
         applyClockState(data);
         refreshUser();
+        premoveRef.current = null;
+        setPremove(null);
       } else if (data.type === "move_error") {
         pendingMoveRef.current = false;
+        premoveRef.current = null;
+        setPremove(null);
         if (data.game) {
           applyClockState(data);
         }
@@ -161,7 +220,7 @@ export default function GamePage() {
     [applyClockState, refreshUser, gameId]
   );
 
-  const { send, connected } = useWebSocket(handleWsMessage);
+  const { send, connected, pingMs } = useWebSocket(handleWsMessage);
 
   useEffect(() => {
     api
@@ -295,15 +354,44 @@ export default function GamePage() {
     }
   }, [game, isRoyale, moveTimer, whiteTime, blackTime, royaleClock.ms, royaleClock.phase]);
 
+  // Fire the queued premove when it becomes our turn.
+  // Clearing premoveRef at the start of firing prevents re-entry if the effect
+  // runs again (e.g. when the optimistic FEN update changes game?.fen).
   useEffect(() => {
-    if (!game?.moves) return;
-    if (game.moves !== prevMovesRef.current) {
-      prevMovesRef.current = game.moves;
-      if (game.moves.trim()) {
-        setLastMove(null);
-      }
+    if (!game || !user || game.status !== "active") return;
+    if (pendingMoveRef.current) return;
+
+    const myColor = game.white_player.id === user.id ? "white" : "black";
+    if (game.active_color !== myColor) return;
+
+    const pm = premoveRef.current;
+    if (!pm) return;
+
+    // Clear first — prevents double-fire on subsequent FEN-only changes
+    premoveRef.current = null;
+    setPremove(null);
+
+    const optimistic = tryOptimisticMove(game, pm.from, pm.to, myColor);
+    if (!optimistic) return; // Premove was illegal in the new position — silently discard
+
+    pendingMoveRef.current = true;
+    gameClockRef.current = optimistic.game;
+    activeColorRef.current = optimistic.game.active_color;
+    setGame(optimistic.game);
+
+    if (optimistic.game.game_mode === "royale") {
+      timeoutSentRef.current = false;
+      setClockTick((t) => t + 1);
+      setMoveTimer(liveRoyaleMoveTimerMs(optimistic.game));
+    } else {
+      const { whiteMs, blackMs } = liveStandardClockMs(optimistic.game);
+      setWhiteTime(whiteMs);
+      setBlackTime(blackMs);
     }
-  }, [game?.moves]);
+
+    send({ type: "move", game_id: gameId, from: pm.from, to: pm.to });
+    setLastMove({ from: pm.from, to: pm.to });
+  }, [game?.active_color, game?.fen]);
 
   if (!game || !user) {
     return (
@@ -353,13 +441,15 @@ export default function GamePage() {
       setBlackTime(blackMs);
     }
 
-    send({
-      type: "move",
-      game_id: gameId,
-      from: moveResult.from,
-      to: moveResult.to,
-    });
+    const msg = { type: "move", game_id: gameId, from: moveResult.from, to: moveResult.to };
+    if (moveResult.promotion) msg.promotion = moveResult.promotion;
+    send(msg);
     setLastMove({ from: moveResult.from, to: moveResult.to });
+  };
+
+  const handlePremove = ({ from, to }) => {
+    premoveRef.current = { from, to };
+    setPremove({ from, to });
   };
 
   const handleResign = () => {
@@ -487,9 +577,16 @@ export default function GamePage() {
               inCheck={game.in_check}
               checkedColor={game.in_check ? game.active_color : null}
               onMove={handleMove}
-              lastMove={lastMove}
+              lastMove={
+                game.last_move_from
+                  ? { from: game.last_move_from, to: game.last_move_to }
+                  : lastMove
+              }
               turn={game.active_color}
               showPossibleMovesSide={boardInteractive ? (isWhite ? "white" : "black") : "both"}
+              enablePremoves={!myTurn && game.status === "active" && (isWhite || isBlack)}
+              premoves={premove ? [premove] : []}
+              onPremove={handlePremove}
             />
           </div>
 
@@ -570,8 +667,11 @@ export default function GamePage() {
             {game.status === "finished" && (
               <div className="game-result">
                 <p className="result-text">{resultMessage()}</p>
-                {ratingChange() && (
-                  <p className="rating-change">{ratingChange()} rating</p>
+                {(isWhite ? game.white_rating_after : game.black_rating_after) != null && (
+                  <RatingAnimation
+                    before={isWhite ? game.white_rating_before : game.black_rating_before}
+                    after={isWhite ? game.white_rating_after : game.black_rating_after}
+                  />
                 )}
                 {terminationMessage() && (
                   <p className="termination">{terminationMessage()}</p>
@@ -617,6 +717,7 @@ export default function GamePage() {
             incomingMessage={incomingMessage}
             chatError={chatError}
             onDismissChatError={(msg) => setChatError(msg ?? null)}
+            pingMs={pingMs}
           />
         </div>
       </div>

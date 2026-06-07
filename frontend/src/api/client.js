@@ -63,6 +63,8 @@ export const api = {
   acceptChallenge: (token) =>
     request(`/api/v1/games/challenges/${token}/accept`, { method: "POST" }),
 
+  getActiveGames: () => request("/api/v1/games/active"),
+
   getGame: (gameId) => request(`/api/v1/games/${gameId}`),
 
   getGameReplay: (gameId) => request(`/api/v1/games/${gameId}/replay`),

@@ -2,11 +2,35 @@ import { api } from "./client";
 
 const subscribers = new Set();
 const connectedListeners = new Set();
+const pingListeners = new Set();
 
 let ws = null;
 let reconnectTimer = null;
+let pingTimer = null;
+let pendingPingAt = null;
+let lastPingMs = null;
 let outboundQueue = [];
 let intentionalClose = false;
+
+function notifyPing(ms) {
+  lastPingMs = ms;
+  pingListeners.forEach((l) => l(ms));
+}
+
+function startPing() {
+  stopPing();
+  pingTimer = setInterval(() => {
+    if (ws?.readyState === WebSocket.OPEN) {
+      pendingPingAt = performance.now();
+      ws.send(JSON.stringify({ type: "ping", t: pendingPingAt }));
+    }
+  }, 5000);
+}
+
+function stopPing() {
+  if (pingTimer) { clearInterval(pingTimer); pingTimer = null; }
+  pendingPingAt = null;
+}
 
 function notifyConnected(connected) {
   connectedListeners.forEach((listener) => listener(connected));
@@ -47,17 +71,25 @@ function connect() {
   ws.onopen = () => {
     notifyConnected(true);
     flushQueue();
+    startPing();
   };
 
   ws.onclose = () => {
     ws = null;
+    stopPing();
     notifyConnected(false);
     scheduleReconnect();
   };
 
   ws.onmessage = (event) => {
     try {
-      notifyMessage(JSON.parse(event.data));
+      const data = JSON.parse(event.data);
+      if (data.type === "pong" && pendingPingAt != null) {
+        notifyPing(Math.round(performance.now() - pendingPingAt));
+        pendingPingAt = null;
+        return; // don't propagate pong to app subscribers
+      }
+      notifyMessage(data);
     } catch {
       /* ignore malformed messages */
     }
@@ -68,6 +100,7 @@ function disconnect() {
   intentionalClose = true;
   clearTimeout(reconnectTimer);
   reconnectTimer = null;
+  stopPing();
   outboundQueue = [];
 
   if (ws) {
@@ -103,10 +136,17 @@ function onConnectedChange(listener) {
   return () => connectedListeners.delete(listener);
 }
 
+function subscribePing(listener) {
+  pingListeners.add(listener);
+  if (lastPingMs !== null) listener(lastPingMs);
+  return () => pingListeners.delete(listener);
+}
+
 export const wsClient = {
   connect,
   disconnect,
   send,
   subscribe,
   onConnectedChange,
+  subscribePing,
 };

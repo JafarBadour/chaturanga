@@ -97,3 +97,100 @@
 .logout-icon {
   margin-bottom: 16px;
 }
+
+/* ── Active games indicator ───────────────────────────────────────────── */
+@keyframes ag-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(93, 187, 52, 0.7); }
+  50%       { box-shadow: 0 0 0 6px rgba(93, 187, 52, 0); }
+}
+
+.active-games-wrap {
+  position: relative;
+}
+
+.active-games-btn {
+  position: relative;
+}
+
+.active-games-pulse {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #5dbb34;
+  border: 2px solid var(--sidebar-bg);
+  animation: ag-pulse 1.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.active-games-popover {
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 0;
+  width: 220px;
+  background: #1a1816;
+  border: 1px solid #3a3735;
+  border-radius: 10px;
+  padding: 10px 0 6px;
+  z-index: 200;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+
+.active-games-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #777;
+  padding: 0 14px 6px;
+  margin: 0;
+  border-bottom: 1px solid #2e2c2a;
+}
+
+.active-game-row {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 14px;
+  box-sizing: border-box;
+  transition: background 0.15s;
+}
+
+.active-game-row:hover {
+  background: #262421;
+}
+
+.agr-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #5dbb34;
+  flex-shrink: 0;
+  animation: ag-pulse 1.8s ease-in-out infinite;
+}
+
+.agr-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow: hidden;
+}
+
+.agr-opponent {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e8e6e3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.agr-meta {
+  font-size: 11px;
+  color: #888;
+}

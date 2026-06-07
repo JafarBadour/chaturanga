@@ -6,6 +6,15 @@ from typing import Literal, Optional
 from pydantic import BaseModel, Field
 
 
+class ActiveGameSummary(BaseModel):
+    game_id: str
+    opponent_username: str
+    opponent_rating: int
+    time_control: str
+    game_mode: str
+    my_color: str
+
+
 class SeekRequest(BaseModel):
     time_control: str = Field(
         default="5+0",
@@ -153,6 +162,8 @@ class GameResponse(BaseModel):
     is_stalemate: bool = False
     active_color: Literal["white", "black"] = "white"
     draw_offer: Optional[DrawOfferInfo] = None
+    last_move_from: Optional[str] = None
+    last_move_to: Optional[str] = None
 
     class Config:
         from_attributes = True

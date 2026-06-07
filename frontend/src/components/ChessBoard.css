@@ -97,7 +97,74 @@
 /* Last move squares */
 .square.last-move {
   background-color: #cdd26a !important;
-  box-shadow: inset 0 0 0 2px #769656;
+}
+
+/* Premove squares */
+.square.premove-from,
+.square.premove-to {
+  background-color: #f77f2a !important;
+  opacity: 0.85;
+}
+
+.square.premove-selected {
+  background-color: #f77f2a !important;
+  box-shadow: inset 0 0 0 3px #c45f00;
+}
+
+.square.premove-possible {
+  position: relative;
+}
+
+.square.premove-possible::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 22%;
+  height: 22%;
+  background-color: rgba(247, 127, 42, 0.7);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* Promotion overlay + picker */
+.promotion-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.promotion-picker {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  z-index: 31;
+  overflow: hidden;
+  border-radius: 4px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+}
+
+.promotion-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+
+.promotion-option:nth-child(odd) {
+  background-color: #f0d9b5;
+}
+
+.promotion-option:nth-child(even) {
+  background-color: #b58863;
+}
+
+.promotion-option:hover {
+  background-color: #cdd26a !important;
 }
 
 /* King in check */
